@@ -2,3 +2,5 @@ encryptionsalt: v1:FWljtR2P6eQ=:v1:JniBLHU5Kgx9e76i:LtE7OE8G5gK22honFlgwzOR11c6p
 config:
   gcp:project: m3odev
   gcp:zone: europe-west2-a
+  m3o:cloudflare-api-key:
+    secure: v1:Ea5YbBnR241tcjn2:O4y8TH8hBiw5RmKhCVpgkoSIeJQMj4e6s3iQMA5HnzgH06m6idnXmDLzbwmtTQupWb3jfQYcAgs=

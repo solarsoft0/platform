@@ -3,7 +3,11 @@ package main
 import (
 	"github.com/pulumi/pulumi-gcp/sdk/v3/go/gcp/compute"
 	"github.com/pulumi/pulumi-gcp/sdk/v3/go/gcp/container"
+	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/core/v1"
+	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/helm/v3"
+	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 )
 
 func main() {
@@ -17,8 +21,13 @@ func main() {
 		}
 
 		cluster, err := container.NewCluster(ctx, "dev", &container.ClusterArgs{
-			Network:             network.SelfLink,
-			NetworkingMode:      pulumi.String("VPC_NATIVE"),
+			Network:        network.SelfLink,
+			NetworkingMode: pulumi.String("VPC_NATIVE"),
+			IpAllocationPolicy: &container.ClusterIpAllocationPolicyArgs{
+				ClusterIpv4CidrBlock:  pulumi.String(""),
+				ServicesIpv4CidrBlock: pulumi.String(""),
+			},
+			InitialNodeCount:    pulumi.Int(1),
 			EnableShieldedNodes: pulumi.BoolPtr(true),
 			LoggingService:      pulumi.StringPtr("none"),
 			MonitoringService:   pulumi.StringPtr("none"),
@@ -36,21 +45,25 @@ func main() {
 			return err
 		}
 
-		ctx.Export("kubeconfig", generateKubeconfig(
-			cluster.Endpoint, cluster.Name, cluster.MasterAuth))
-
-		np, err := container.NewNodePool(ctx, "testy", &container.NodePoolArgs{
-			Cluster:          cluster.SelfLink,
+		np, err := container.NewNodePool(ctx, "micro", &container.NodePoolArgs{
+			Cluster:          cluster.Name,
 			InitialNodeCount: pulumi.Int(1),
 			Autoscaling: &container.NodePoolAutoscalingArgs{
 				MinNodeCount: pulumi.Int(1),
 				MaxNodeCount: pulumi.Int(3),
 			},
 			NodeConfig: &container.NodePoolNodeConfigArgs{
-				Preemptible:   pulumi.Bool(true),
-				MachineType:   pulumi.String("e2-standard-2"),
-				OauthScopes:   pulumi.StringArray{},
-				SandboxConfig: &container.NodePoolNodeConfigSandboxConfigArgs{SandboxType: pulumi.String("gvisor")},
+				Preemptible: pulumi.Bool(true),
+				MachineType: pulumi.String("e2-standard-2"),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		ns, err := corev1.NewNamespace(ctx, "cert-manager", &corev1.NamespaceArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Name: pulumi.String("cert-manager"),
 			},
 		})
 		if err != nil {
@@ -58,39 +71,40 @@ func main() {
 		}
 
 		ctx.Export("nodepool", np.Name)
+		c := config.New(ctx, "")
+		corev1.NewSecret(ctx, "cloudflare-api-key", &corev1.SecretArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+				Name:      pulumi.String("cloudflare-api-key"),
+			},
+			StringData: pulumi.StringMap{
+				"cloudflare": pulumi.String(c.Require("cloudflare-api-key")),
+			},
+		})
+
+		// Cert manager
+		_, err = helm.NewChart(ctx, "certmanager", helm.ChartArgs{
+			Chart:   pulumi.String("cert-manager"),
+			Version: pulumi.String("v1.0.3"),
+			FetchArgs: helm.FetchArgs{
+				Repo: pulumi.String("https://charts.jetstack.io"),
+			},
+			Values: pulumi.Map{
+				"installCRDs": pulumi.Bool(true),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// // Create a letsencrypt issuer
+		// _, err = yaml.NewConfigFile(ctx, "letsencryptcerts", &yaml.ConfigFileArgs{
+		// 	File: "letsencrypt.yaml",
+		// })
+		// if err != nil {
+		// 	return err
+		// }
 
 		return nil
 	})
-}
-
-func generateKubeconfig(clusterEndpoint pulumi.StringOutput, clusterName pulumi.StringOutput,
-	clusterMasterAuth container.ClusterMasterAuthOutput) pulumi.StringOutput {
-	context := pulumi.Sprintf("demo_%s", clusterName)
-
-	return pulumi.Sprintf(`apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: %s
-    server: https://%s
-  name: %s
-contexts:
-- context:
-    cluster: %s
-    user: %s
-  name: %s
-current-context: %s
-kind: Config
-preferences: {}
-users:
-- name: %s
-  user:
-    auth-provider:
-      config:
-        cmd-args: config config-helper --format=json
-        cmd-path: gcloud
-        expiry-key: '{.credential.token_expiry}'
-        token-key: '{.credential.access_token}'
-      name: gcp`,
-		clusterMasterAuth.ClusterCaCertificate().Elem(),
-		clusterEndpoint, context, context, context, context, context, context)
 }
