@@ -6,6 +6,7 @@ import (
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/core/v1"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/helm/v3"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/meta/v1"
+	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
 )
@@ -61,6 +62,9 @@ func main() {
 			return err
 		}
 
+		ctx.Export("nodepool", np.Name)
+
+		// Cert manager
 		ns, err := corev1.NewNamespace(ctx, "cert-manager", &corev1.NamespaceArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("cert-manager"),
@@ -70,7 +74,6 @@ func main() {
 			return err
 		}
 
-		ctx.Export("nodepool", np.Name)
 		c := config.New(ctx, "")
 		corev1.NewSecret(ctx, "cloudflare-api-key", &corev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
@@ -82,10 +85,10 @@ func main() {
 			},
 		})
 
-		// Cert manager
 		_, err = helm.NewChart(ctx, "certmanager", helm.ChartArgs{
-			Chart:   pulumi.String("cert-manager"),
-			Version: pulumi.String("v1.0.3"),
+			Namespace: pulumi.String("cert-manager"),
+			Chart:     pulumi.String("cert-manager"),
+			Version:   pulumi.String("v1.0.3"),
 			FetchArgs: helm.FetchArgs{
 				Repo: pulumi.String("https://charts.jetstack.io"),
 			},
@@ -97,13 +100,101 @@ func main() {
 			return err
 		}
 
-		// // Create a letsencrypt issuer
-		// _, err = yaml.NewConfigFile(ctx, "letsencryptcerts", &yaml.ConfigFileArgs{
-		// 	File: "letsencrypt.yaml",
-		// })
-		// if err != nil {
-		// 	return err
-		// }
+		// Create a letsencrypt issuer
+		_, err = yaml.NewConfigFile(ctx, "letsencryptcerts", &yaml.ConfigFileArgs{
+			File: "letsencrypt.yaml",
+		})
+		if err != nil {
+			return err
+		}
+
+		// -------- ETCD ----------
+		// Cert manager
+		ns, err = corev1.NewNamespace(ctx, "etcd", &corev1.NamespaceArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Name: pulumi.String("etcd"),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// Root certs for CA
+		corev1.NewSecret(ctx, "etcd-ca", &corev1.SecretArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+				Name:      pulumi.String("etcd-ca"),
+			},
+			StringData: pulumi.StringMap{
+				"tls.crt": pulumi.String(c.Require("etcd-ca-crt")),
+				"tls.key": pulumi.String(c.Require("etcd-ca-key")),
+			},
+		})
+
+		_, err = yaml.NewConfigFile(ctx, "etcdissuer", &yaml.ConfigFileArgs{
+			File: "etcdissuer.yml",
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = yaml.NewConfigFile(ctx, "etcdcerts", &yaml.ConfigFileArgs{
+			File: "etcdcerts.yml",
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = helm.NewChart(ctx, "etcd", helm.ChartArgs{
+			Namespace: pulumi.String("etcd"),
+			Chart:     pulumi.String("etcd"),
+			Version:   pulumi.String("4.12.2"),
+			FetchArgs: helm.FetchArgs{
+				Repo: pulumi.String("https://charts.bitnami.com/bitnami"),
+			},
+			Values: pulumi.Map{
+				"statefulset": pulumi.Map{
+					"replicaCount": pulumi.Int(3),
+				},
+				"readinessProbe": pulumi.Map{
+					"enabled": pulumi.Bool(false),
+				},
+				"livenessProbe": pulumi.Map{
+					"enabled": pulumi.Bool(false),
+				},
+				"metrics": pulumi.Map{
+					"enabled": pulumi.Bool(true),
+				},
+				"auth": pulumi.Map{
+					"rbac": pulumi.Map{
+						"enabled": pulumi.Bool(false),
+					},
+					"client": pulumi.Map{
+						"secureTransport":      pulumi.Bool(true),
+						"enableAuthentication": pulumi.Bool(true),
+						"existingSecret":       pulumi.String("etcd-client-certs"),
+						"certFilename":         pulumi.String("tls.crt"),
+						"certKeyFilename":      pulumi.String("tls.key"),
+						"caFilename":           pulumi.String("ca.crt"),
+					},
+					"peer": pulumi.Map{
+						"secureTransport":      pulumi.Bool(true),
+						"enableAuthentication": pulumi.Bool(true),
+						"existingSecret":       pulumi.String("etcd-peer-certs"),
+						"certFilename":         pulumi.String("tls.crt"),
+						"certKeyFilename":      pulumi.String("tls.key"),
+						"caFilename":           pulumi.String("ca.crt"),
+					},
+				},
+				// TODO
+				// "affinity": pulumi.Map{
+				// 	"podAntiAffinity": pulumi.Map{},
+				// },
+			},
+		})
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
