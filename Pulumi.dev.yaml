@@ -1,0 +1,4 @@
+encryptionsalt: v1:FWljtR2P6eQ=:v1:JniBLHU5Kgx9e76i:LtE7OE8G5gK22honFlgwzOR11c6paQ==
+config:
+  gcp:project: m3odev
+  gcp:zone: europe-west2-a
