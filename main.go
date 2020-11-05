@@ -132,14 +132,14 @@ func main() {
 		})
 
 		_, err = yaml.NewConfigFile(ctx, "etcdissuer", &yaml.ConfigFileArgs{
-			File: "etcdissuer.yml",
+			File: "etcd/etcdissuer.yml",
 		})
 		if err != nil {
 			return err
 		}
 
 		_, err = yaml.NewConfigFile(ctx, "etcdcerts", &yaml.ConfigFileArgs{
-			File: "etcdcerts.yml",
+			File: "etcd/etcdcerts.yml",
 		})
 		if err != nil {
 			return err
@@ -190,6 +190,88 @@ func main() {
 				// "affinity": pulumi.Map{
 				// 	"podAntiAffinity": pulumi.Map{},
 				// },
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// -------- Timescaledb ----------
+		ns, err = corev1.NewNamespace(ctx, "timescale", &corev1.NamespaceArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Name: pulumi.String("timescale"),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		corev1.NewSecret(ctx, "timescale-ca", &corev1.SecretArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+				Name:      pulumi.String("timescale-ca"),
+			},
+			StringData: pulumi.StringMap{
+				"tls.crt": pulumi.String(c.Require("timescale-ca-crt")),
+				"tls.key": pulumi.String(c.Require("timescale-ca-key")),
+			},
+		})
+
+		corev1.NewSecret(ctx, "timescale-credentials", &corev1.SecretArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+				Name:      pulumi.String("timescale-credentials"),
+			},
+			StringData: pulumi.StringMap{
+				"PATRONI_SUPERUSER_PASSWORD":   pulumi.String(c.Require("patroni_superuser_password")),
+				"PATRONI_REPLICATION_PASSWORD": pulumi.String(c.Require("patroni_replication_password")),
+				"PATRONI_admin_PASSWORD":       pulumi.String(c.Require("patroni_admin_password")),
+			},
+		})
+
+		_, err = yaml.NewConfigFile(ctx, "timescale-issuer", &yaml.ConfigFileArgs{
+			File: "timescale/issuer.yml",
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = yaml.NewConfigFile(ctx, "timescale-certs", &yaml.ConfigFileArgs{
+			File: "timescale/certs.yml",
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = helm.NewChart(ctx, "timescale", helm.ChartArgs{
+			Namespace: pulumi.String("timescale"),
+			Chart:     pulumi.String("timescaledb-single"),
+			FetchArgs: helm.FetchArgs{
+				Repo: pulumi.String("https://charts.timescale.com"),
+			},
+			Values: pulumi.Map{
+				"loadBalancer": pulumi.Map{
+					"enabled": pulumi.Bool(false),
+				},
+				"prometheus": pulumi.Map{
+					"enabled": pulumi.Bool(true),
+				},
+				"rbac": pulumi.Map{
+					"create": pulumi.Bool(true),
+				},
+				"secretNames": pulumi.Map{
+					"certificate": pulumi.String("timescale-tls"),
+					"credentials": pulumi.String("timescale-credentials"),
+				},
+				"networkPolicy": pulumi.Map{
+					"enabled":       pulumi.Bool(true),
+					"prometheusApp": pulumi.String("prometheus"),
+				},
+				"backup": pulumi.Map{
+					"enabled": pulumi.Bool(false),
+				},
+				// TODO
+				// backups and network policy for analytics
 			},
 		})
 		if err != nil {
