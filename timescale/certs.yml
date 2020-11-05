@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: timescale-tls
+  namespace: timescale
+spec:
+  secretName: timescale-tls
+  subject:
+    organizations:
+    - m3o
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  dnsNames:
+  - "timescale.timescale.svc.cluster.local"
+  -  "timescale"
+  issuerRef:
+    name: ca-issuer
