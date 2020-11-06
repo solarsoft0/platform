@@ -8,10 +8,11 @@ import (
 	"github.com/pulumi/pulumi-gcp/sdk/v3/go/gcp/projects"
 	"github.com/pulumi/pulumi-gcp/sdk/v3/go/gcp/serviceaccount"
 	"github.com/pulumi/pulumi-gcp/sdk/v3/go/gcp/storage"
+	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/core/v1"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/helm/v3"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/meta/v1"
-	v1beta1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/storage/v1beta1"
+	storev1 "github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/storage/v1"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v2/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v2/go/pulumi/config"
@@ -52,6 +53,13 @@ func main() {
 			return err
 		}
 
+		k8sProvider, err := kubernetes.NewProvider(ctx, "cluster", &kubernetes.ProviderArgs{
+			Kubeconfig: generateKubeconfig(cluster),
+		})
+		if err != nil {
+			return err
+		}
+
 		np, err := container.NewNodePool(ctx, "micro", &container.NodePoolArgs{
 			Cluster:          cluster.Name,
 			InitialNodeCount: pulumi.Int(1),
@@ -71,12 +79,12 @@ func main() {
 		ctx.Export("nodepool", np.Name)
 
 		// SSD Storage
-		_, err = v1beta1.NewStorageClass(ctx, "ssd", &v1beta1.StorageClassArgs{
+		_, err = storev1.NewStorageClass(ctx, "ssd", &storev1.StorageClassArgs{
 			AllowVolumeExpansion: pulumi.Bool(true),
 			Parameters:           pulumi.StringMap{"type": pulumi.String("pd-ssd")},
 			Metadata:             &metav1.ObjectMetaArgs{Name: pulumi.String("ssd")},
 			Provisioner:          pulumi.String("kubernetes.io/gce-pd"),
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -86,7 +94,7 @@ func main() {
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("cert-manager"),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -100,7 +108,7 @@ func main() {
 			StringData: pulumi.StringMap{
 				"cloudflare": pulumi.String(c.Require("cloudflare-api-key")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 
 		_, err = helm.NewChart(ctx, "certmanager", helm.ChartArgs{
 			Namespace: pulumi.String("cert-manager"),
@@ -112,7 +120,7 @@ func main() {
 			Values: pulumi.Map{
 				"installCRDs": pulumi.Bool(true),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -120,7 +128,7 @@ func main() {
 		// Create a letsencrypt issuer
 		_, err = yaml.NewConfigFile(ctx, "letsencryptcerts", &yaml.ConfigFileArgs{
 			File: "issueracme.yaml",
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -135,12 +143,12 @@ func main() {
 				"tls.crt": pulumi.String(c.Require("ca-crt")),
 				"tls.key": pulumi.String(c.Require("ca-key")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 
 		// Create a cluster wide CA
 		_, err = yaml.NewConfigFile(ctx, "customca", &yaml.ConfigFileArgs{
 			File: "issuercustomca.yaml",
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -151,14 +159,14 @@ func main() {
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("etcd"),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
 
 		_, err = yaml.NewConfigFile(ctx, "etcdcerts", &yaml.ConfigFileArgs{
 			File: "etcd/certs.yml",
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -209,7 +217,7 @@ func main() {
 				// 	"podAntiAffinity": pulumi.Map{},
 				// },
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -219,14 +227,14 @@ func main() {
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("minio"),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
 
 		_, err = yaml.NewConfigFile(ctx, "miniocerts", &yaml.ConfigFileArgs{
 			File: "minio/certs.yml",
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -237,11 +245,13 @@ func main() {
 		if err != nil {
 			return err
 		}
-
-		_, err = projects.NewIAMBinding(ctx, "miniobinding", &projects.IAMBindingArgs{
+		_, err = projects.NewIAMBinding(ctx, "minio-storage-admin-binding", &projects.IAMBindingArgs{
 			Members: pulumi.StringArray{pulumi.Sprintf("serviceAccount:%s", sa.Email)},
 			Role:    pulumi.String("roles/storage.admin"),
 		})
+		if err != nil {
+			return err
+		}
 
 		key, err := serviceaccount.NewKey(ctx, "minio-gcs", &serviceaccount.KeyArgs{
 			ServiceAccountId: sa.ID(),
@@ -284,7 +294,7 @@ func main() {
 					},
 				},
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -294,32 +304,20 @@ func main() {
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("timescale"),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
 
-		bucket, err := storage.NewBucket(ctx, "m3otimescalebackups", &storage.BucketArgs{
-			Name:     pulumi.String("m3otimescalebackups"),
+		bucket, err := storage.NewBucket(ctx, "timescalebackups", &storage.BucketArgs{
+			Name:     pulumi.String("timescalebackups"),
 			Location: pulumi.String(config.Get(ctx, "gcp:region")),
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
 
-		sa, err = serviceaccount.NewAccount(ctx, "timescale", &serviceaccount.AccountArgs{
-			AccountId: pulumi.String("timescale"),
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = projects.NewIAMBinding(ctx, "tsbinding", &projects.IAMBindingArgs{
-			Members: pulumi.StringArray{pulumi.Sprintf("serviceAccount:%s", sa.Email)},
-			Role:    pulumi.String("roles/storage.objectAdmin"),
-		})
-
-		corev1.NewSecret(ctx, "timescale-credentials", &corev1.SecretArgs{
+		_, err = corev1.NewSecret(ctx, "timescale-credentials", &corev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Namespace: ns.Metadata.Name(),
 				Name:      pulumi.String("timescale-credentials"),
@@ -329,7 +327,10 @@ func main() {
 				"PATRONI_REPLICATION_PASSWORD": pulumi.String(c.Require("patroni_replication_password")),
 				"PATRONI_admin_PASSWORD":       pulumi.String(c.Require("patroni_admin_password")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
+		if err != nil {
+			return err
+		}
 
 		corev1.NewSecret(ctx, "timescale-pgbackrest", &corev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
@@ -342,11 +343,11 @@ func main() {
 				"PGBACKREST_REPO1_S3_KEY":        pulumi.String(c.Require("minio-access-key")),
 				"PGBACKREST_REPO1_S3_KEY_SECRET": pulumi.String(c.Require("minio-secret-key")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 
-		_, err = yaml.NewConfigFile(ctx, "timescale-certs", &yaml.ConfigFileArgs{
+		timescaleTls, err := yaml.NewConfigFile(ctx, "timescale-tls", &yaml.ConfigFileArgs{
 			File: "timescale/certs.yml",
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -375,7 +376,7 @@ func main() {
 				"backup": pulumi.Map{
 					"enabled": pulumi.Bool(true),
 					"pgBackRest": pulumi.Map{
-						"repo1-path":          pulumi.String("/m3otimescalebackups"),
+						"repo1-path":          pulumi.String("/timescalebackups"),
 						"repo1-s3-endpoint":   pulumi.String("minio.minio"),
 						"repo1-s3-host":       pulumi.String("minio.minio"),
 						"repo1-s3-verify-tls": pulumi.String("n"),
@@ -383,7 +384,9 @@ func main() {
 					"envFrom": pulumi.MapArray{
 						pulumi.Map{
 							"secretRef": pulumi.StringMap{
-								"name": pulumi.String("timescale-pgbackrest")}},
+								"name": pulumi.String("timescale-pgbackrest"),
+							},
+						},
 					},
 				},
 				"persistentVolumes": pulumi.Map{
@@ -399,7 +402,7 @@ func main() {
 					},
 				},
 			},
-		})
+		}, pulumi.DependsOn([]pulumi.Resource{timescaleTls}), pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -412,7 +415,7 @@ func main() {
 			StringData: pulumi.StringMap{
 				"postgres": pulumi.String(c.Require("patroni_superuser_password")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 
 		_, err = helm.NewChart(ctx, "promscale", helm.ChartArgs{
 			Namespace: pulumi.String("timescale"),
@@ -433,7 +436,7 @@ func main() {
 					},
 				},
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -443,7 +446,7 @@ func main() {
 			Metadata: &metav1.ObjectMetaArgs{
 				Name: pulumi.String("monitoring"),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -465,7 +468,7 @@ remote_write:
 remote_read:
   - url: "http://promscale-connector.timescale:9201/read"`),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
@@ -484,7 +487,7 @@ remote_read:
 				"GF_DATABASE_SSL_MODE": pulumi.String("require"),
 				"GF_DATABASE_PASSWORD": pulumi.String(c.Require("patroni_superuser_password")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 
 		_, err = helm.NewChart(ctx, "grafana", helm.ChartArgs{
 			Namespace: pulumi.String("monitoring"),
@@ -494,42 +497,137 @@ remote_read:
 			},
 			Values: pulumi.Map{
 				"envFromSecret": pulumi.String("grafana-credentials"),
+				"adminUser":     pulumi.String("admin"),
+				"adminPassword": pulumi.String(c.Require("grafana-admin-pass")),
 			},
-		})
+		}, pulumi.Provider(k8sProvider))
 		if err != nil {
 			return err
 		}
 
 		// -------- LOKI --------
-		// corev1.NewSecret(ctx, "grafana-credentials", &corev1.SecretArgs{
-		// 	Metadata: &metav1.ObjectMetaArgs{
-		// 		Namespace: ns.Metadata.Name(),
-		// 		Name:      pulumi.String("grafana-credentials"),
-		// 	},
-		// 	StringData: pulumi.StringMap{
-		// 		"GF_DATABASE_TYPE":     pulumi.String("postgres"),
-		// 		"GF_DATABASE_HOST":     pulumi.String("timescale.timescale"),
-		// 		"GF_DATABASE_USER":     pulumi.String("postgres"),
-		// 		"GF_DATABASE_NAME":     pulumi.String("postgres"),
-		// 		"GF_DATABASE_SSL_MODE": pulumi.String("require"),
-		// 		"GF_DATABASE_PASSWORD": pulumi.String(c.Require("patroni_superuser_password")),
-		// 	},
-		// })
+		sa, err = serviceaccount.NewAccount(ctx, "loki", &serviceaccount.AccountArgs{
+			AccountId: pulumi.String("lokilogs"),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = projects.NewIAMBinding(ctx, "loki-storage-admin-binding", &projects.IAMBindingArgs{
+			Members: pulumi.StringArray{pulumi.Sprintf("serviceAccount:%s", sa.Email)},
+			Role:    pulumi.String("roles/storage.objectAdmin"),
+		})
+		if err != nil {
+			return err
+		}
+		key, err = serviceaccount.NewKey(ctx, "loki-gcs", &serviceaccount.KeyArgs{
+			ServiceAccountId: sa.ID(),
+		})
+		if err != nil {
+			return err
+		}
 
-		// _, err = helm.NewChart(ctx, "grafana", helm.ChartArgs{
-		// 	Namespace: pulumi.String("monitoring"),
-		// 	Chart:     pulumi.String("grafana"),
-		// 	FetchArgs: helm.FetchArgs{
-		// 		Repo: pulumi.String("https://grafana.github.io/helm-charts"),
-		// 	},
-		// 	Values: pulumi.Map{
-		// 		"envFromSecret": pulumi.String("grafana-credentials"),
-		// 	},
-		// })
-		// if err != nil {
-		// 	return err
-		// }
+		secret, err := corev1.NewSecret(ctx, "loki-credentials", &corev1.SecretArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+				Name:      pulumi.String("loki-credentials"),
+			},
+			StringData: pulumi.StringMap{
+				"gcsKeyJson": key.PrivateKey.ApplyString(func(s string) string {
+					str, _ := base64.StdEncoding.DecodeString(s)
+					return string(str)
+				}),
+			},
+		}, pulumi.Provider(k8sProvider))
+		if err != nil {
+			return err
+		}
+
+		bucket, err = storage.NewBucket(ctx, "lokilogs", &storage.BucketArgs{
+			Name:     pulumi.String("lokilogs"),
+			Location: pulumi.String(config.Get(ctx, "gcp:region")),
+		}, pulumi.Provider(k8sProvider))
+		if err != nil {
+			return err
+		}
+
+		_, err = helm.NewChart(ctx, "loki", helm.ChartArgs{
+			Namespace: pulumi.String("monitoring"),
+			Chart:     pulumi.String("loki"),
+			FetchArgs: helm.FetchArgs{
+				Repo: pulumi.String("https://grafana.github.io/loki/charts"),
+			},
+			Version: pulumi.String("2.0.2"),
+			Values: pulumi.Map{
+				"storage_config": pulumi.Map{
+					"boltdb_shipper": pulumi.Map{
+						"shared_store": pulumi.String("gcs"),
+					},
+					"gcs": pulumi.Map{
+						"bucket_name": bucket.Name,
+					},
+				},
+				"schema_config": pulumi.Map{
+					"configs": pulumi.MapArray{
+						pulumi.Map{
+							"configs": pulumi.Map{
+								"store":        pulumi.String("boltdb-shipper"),
+								"object_store": pulumi.String("gcs"),
+								"schema":       pulumi.String("v11"),
+								"index": pulumi.Map{
+									"prefix": pulumi.String("index_"),
+									"period": pulumi.String("24h"),
+								},
+							},
+						},
+					},
+				},
+				"env": pulumi.MapArray{
+					pulumi.Map{
+						"name": pulumi.String("GOOGLE_APPLICATION_CREDENTIALS"),
+						"valueFrom": pulumi.Map{
+							"secretKeyRef": pulumi.Map{
+								"name": secret.Metadata.Name(),
+								"key":  pulumi.String("gcsKeyJson"),
+							},
+						},
+					},
+				},
+			},
+		}, pulumi.Provider(k8sProvider))
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
+}
+
+func generateKubeconfig(cluster *container.Cluster) pulumi.StringOutput {
+	context := pulumi.Sprintf("demo_%s", cluster.Name)
+	return pulumi.Sprintf(`apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: %s
+    server: https://%s
+  name: %s
+contexts:
+- context:
+    cluster: %s
+    user: %s
+  name: %s
+current-context: %s
+kind: Config
+preferences: {}
+users:
+- name: %s
+  user:
+    auth-provider:
+      config:
+        cmd-args: config config-helper --format=json
+        cmd-path: gcloud
+        expiry-key: '{.credential.token_expiry}'
+        token-key: '{.credential.access_token}'
+      name: gcp`,
+		cluster.MasterAuth.ClusterCaCertificate().Elem(),
+		cluster.Endpoint, context, context, context, context, context, context)
 }
