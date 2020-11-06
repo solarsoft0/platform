@@ -8,6 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/pulumi/pulumi-gcp/sdk/v3 v3.25.0
 	github.com/pulumi/pulumi-kubernetes/sdk/v2 v2.6.3
+	github.com/pulumi/pulumi-postgresql/sdk/v2 v2.5.0 // indirect
 	github.com/pulumi/pulumi/sdk/v2 v2.12.1
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/sys v0.0.0-20200905004654-be1d3432aa8f // indirect

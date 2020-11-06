@@ -1,10 +1,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: timescale-tls
-  namespace: timescale
+  name: minio-tls
+  namespace: minio
 spec:
-  secretName: timescale-tls
+  secretName: minio-tls
   subject:
     organizations:
     - m3o
@@ -13,8 +13,9 @@ spec:
     algorithm: ECDSA
     size: 256
   dnsNames:
-  - "timescale.timescale.svc.cluster.local"
-  -  "timescale"
+  - "minio.minio.svc.cluster.local"
+  -  "minio"
   issuerRef:
     name: ca
     kind: ClusterIssuer
+

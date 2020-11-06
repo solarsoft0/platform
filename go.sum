@@ -171,6 +171,11 @@ github.com/pulumi/pulumi-gcp/sdk/v3 v3.25.0/go.mod h1:seMmqN/jn5Ez15ygddBOVU3ECO
 github.com/pulumi/pulumi-kubernetes v1.6.0 h1:PDo9O8G1JXQgkz22poKg6XjrCID7EH6IUjMQtbK5Dy8=
 github.com/pulumi/pulumi-kubernetes/sdk/v2 v2.6.3 h1:NSN70Ejzt5rPCeWGa3ilvHxhgT0l4HAW2ijnzBzqAEM=
 github.com/pulumi/pulumi-kubernetes/sdk/v2 v2.6.3/go.mod h1:qa56SGhnpUSz1JQteFmnBKjuP4bxhSjP4jknXuMiZFg=
+github.com/pulumi/pulumi-postgresql v1.7.0 h1:QZcpAXV6CH7Ha2cGTAqdWKMXLNxIxDYp+zYyNc6Cxck=
+github.com/pulumi/pulumi-postgresql v2.5.0+incompatible h1:fLUNaDZB3xxTk2QBfi7dR3Z6Ja2I7Kcn6ZaGxXik6PI=
+github.com/pulumi/pulumi-postgresql/sdk/v2 v2.5.0 h1:DWOpHtMtXDE8J42/Fhu3eKIN7UEpTFeywTZ6dKK/Wzo=
+github.com/pulumi/pulumi-postgresql/sdk/v2 v2.5.0/go.mod h1:aIjPwg12XDcTqwMYCliwz+s1QSJQ/ALTDx4KeVlrMSI=
+github.com/pulumi/pulumi/sdk/v2 v2.0.0/go.mod h1:W7k1UDYerc5o97mHnlHHp5iQZKEby+oQrQefWt+2RF4=
 github.com/pulumi/pulumi/sdk/v2 v2.2.1/go.mod h1:QNbWpL4gvf3X0lUFT7TXA2Jo1ff/Ti2l97AyFGYwvW4=
 github.com/pulumi/pulumi/sdk/v2 v2.10.2-0.20200917182150-ab70dd3d645d/go.mod h1:EED7KCDOohYIewUppsav5KHTFTmfYGqUFib1uRvYdWQ=
 github.com/pulumi/pulumi/sdk/v2 v2.12.1 h1:rEQHyjaGSGybqqeKLMJZH034UemMPGw2AWzpGcn1tF4=
@@ -194,6 +199,7 @@ github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B
 github.com/spf13/cast v1.3.0/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.3.1 h1:nFm6S0SMdyzrzcmThSipiEubIDy8WEXKNZ0UOgiRpng=
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
+github.com/spf13/cobra v0.0.6/go.mod h1:/6GTrnGXV9HjY+aR4k0oJ5tcvakLuG6EuKReYlHNrgE=
 github.com/spf13/cobra v1.0.0 h1:6m/oheQuQ13N9ks4hubMG6BnvwOeaJrqSPLahSnczz8=
 github.com/spf13/cobra v1.0.0/go.mod h1:/6GTrnGXV9HjY+aR4k0oJ5tcvakLuG6EuKReYlHNrgE=
 github.com/spf13/jwalterweatherman v1.0.0/go.mod h1:cQK4TGJAtQXfYWX+Ddv3mKDzgVb68N+wFjFa4jdeBTo=

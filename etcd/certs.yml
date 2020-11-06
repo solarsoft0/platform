@@ -17,7 +17,8 @@ spec:
   -  "*.etcd-headless.etcd.svc.cluster.local"
   -  "etcd"
   issuerRef:
-    name: ca-issuer
+    name: ca
+    kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -37,7 +38,8 @@ spec:
     algorithm: ECDSA
     size: 256
   issuerRef:
-    name: ca-issuer
+    name: ca
+    kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -57,4 +59,5 @@ spec:
   -  "*.etcd-headless.etcd.svc.cluster.local"
   -  "etcd"
   issuerRef:
-    name: ca-issuer
+    name: ca
+    kind: ClusterIssuer
