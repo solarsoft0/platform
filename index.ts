@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";
-import { SQLPortForward } from "./sql";
+import { K8SExec } from "./exec";
 
 const network = new gcp.compute.Network("stagpriv", {
   autoCreateSubnetworks: true
@@ -350,15 +350,10 @@ new k8s.helm.v3.Chart(
   { provider: k8sProvider }
 );
 
-new SQLPortForward("promscale-users", {
+new K8SExec("promscale-users", {
   namespace: tsNs.metadata.name,
-  postgresCred: {
-    user: "postgres",
-    database: "postgres",
-    password: cf.require("patroni_superuser_password")
-  },
   podSelector: "role=master",
-  podPort: 5432,
+  container: "timescaledb",
   kubeConfig: k8sConfig,
-  sqlCommands: ["SELECT datname FROM pg_database"]
+  cmd: ["psql", "-c", "SELECT datname FROM pg_database"]
 });
