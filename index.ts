@@ -357,3 +357,127 @@ new K8SExec("promscale-users", {
   kubeConfig: k8sConfig,
   cmd: ["psql", "-c", "SELECT datname FROM pg_database"]
 });
+
+
+// -------- GRAFANA --------
+const monNs = new k8s.core.v1.Namespace(
+  "monitoring",
+  { metadata: { name: "monitoring" } },
+  { provider: k8sProvider }
+);
+
+const grafanaCreds = new k8s.core.v1.Secret(
+  "grafana-credentials",
+  {
+    metadata: {
+      namespace: monNs.metadata.name,
+      name: "grafana-credentials"
+    },
+    stringData: {
+      GF_DATABASE_TYPE:     "postgres",
+      GF_DATABASE_HOST:     "timescale.timescale",
+      GF_DATABASE_USER:     "postgres",
+      GF_DATABASE_NAME:     "postgres",
+      GF_DATABASE_SSL_MODE: "require",
+      GF_DATABASE_PASSWORD: cf.require("patroni_superuser_password"),
+    },
+  },
+  { provider: k8sProvider }
+);
+
+new k8s.helm.v3.Chart(
+  "grafana",
+  {
+    namespace: monNs.metadata.name,
+    chart: "grafana",
+    fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
+    values: {
+      envFromSecret: "grafana-credentials",
+      adminUser:     "admin",
+      adminPassword: cf.require("grafana-admin-pass"),
+    }
+  },
+  { provider: k8sProvider }
+);
+
+// -------- LOKI --------
+const lsa = new gcp.serviceaccount.Account("loki", {
+  accountId: "lokilogs"
+});
+
+new gcp.projects.IAMBinding("loki-storage-admin-binding", {
+  members: [pulumi.interpolate`serviceAccount:${lsa.email}`],
+  role: "roles/storage.objectAdmin"
+});
+
+const lokiKey = new gcp.serviceaccount.Key("loki-gcs", {
+  serviceAccountId: lsa.id
+});
+
+const lokiCreds = new k8s.core.v1.Secret(
+  "loki-credentials",
+  {
+    metadata: {
+      namespace: monNs.metadata.name,
+      name: "loki-credentials"
+    },
+    stringData: {
+      gcsKeyJson: lokiKey.privateKey.apply((s: string) => {
+        let buff = new Buffer(s, "base64");
+        return buff.toString("ascii");
+      }),
+    },
+  },
+  { provider: k8sProvider }
+);
+
+const lokiBucket = new gcp.storage.Bucket("lokilogs", {
+  location: gcpConf.require("region")
+});
+
+new k8s.helm.v3.Chart(
+  "loki",
+  {
+    namespace: monNs.metadata.name,
+    chart: "loki",
+    version: "2.0.2",
+    fetchOpts: { repo: "https://grafana.github.io/loki/charts" },
+    values: {
+      storage_config: {
+        boltdb_shipper: {
+          shared_store: "gcs",
+        },
+        gcs: {
+          bucket_name: lokiBucket.name,
+        },
+      },
+      schema_config: {
+        configs: [
+          {
+            configs: {
+              store: "boltdb-shipper",
+              object_store: "gcs",
+              schema: "v11",
+              index: {
+                prefix: "index_",
+                period: "24h",
+              },
+            },
+          },
+        ],
+      },
+      env: [
+        {
+          name: "GOOGLE_APPLICATION_CREDENTIALS",
+          valueFrom: {
+            secretKeyRef: {
+              name: lokiCreds.metadata.name,
+              key:  "gcsKeyJson",
+            },
+          },
+        },
+      ],
+    },
+  },
+  { provider: k8sProvider }
+);
