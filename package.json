@@ -1,0 +1,16 @@
+{
+    "name": "dply",
+    "devDependencies": {
+        "@types/node": "^10.0.0"
+    },
+    "dependencies": {
+        "@kubernetes/client-node": "^0.13.0",
+        "@pulumi/gcp": "^4.0.0",
+        "@pulumi/kubernetes": "^2.6.3",
+        "@pulumi/pulumi": "^2.0.0",
+        "@types/atob": "^2.1.2",
+        "@types/pg": "^7.14.6",
+        "atob": "^2.1.2",
+        "pg": "^8.4.2"
+    }
+}
