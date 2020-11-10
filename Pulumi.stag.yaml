@@ -17,6 +17,8 @@ config:
     secure: AAABAGXCMUZUDJts4KjWaez+26BiaRRn2dVDGZKXGtvDuwNWyKJYcJshK88HRF/P1rLSvgEQCNDgz1tUW+Q0pQ==
   dply:patroni_superuser_password:
     secure: AAABABv9sDXRa7nnPfAE1sb4wQEHUYT2e6Vzwj0KdJCGH8B6q0L3Ljx8StU6nBFbeuQyqb6OtnIvdox/KlWCYg==
+  dply:promscale_postgres_password:
+    secure: AAABAA5RPlFYQd4KTaLTWEc0xdNYPHsCWkRkQ1RpbOIijXLsVN7/igLi3SLychR9BiqjfA8Jdh8fWuFUpxY2AQ==
   gcp:project: m3otftest
   gcp:region: europe-west2
   gcp:zone: europe-west2-a

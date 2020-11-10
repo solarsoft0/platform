@@ -134,7 +134,7 @@ new k8s.core.v1.Secret(
   { provider: k8sProvider, dependsOn: cfChart }
 );
 
-new k8s.yaml.ConfigFile(
+const caCerts = new k8s.yaml.ConfigFile(
   "cacerts",
   { file: "issuercustomca.yaml" },
   { provider: k8sProvider, dependsOn: cfChart }
@@ -150,7 +150,7 @@ const etcdNs = new k8s.core.v1.Namespace(
 new k8s.yaml.ConfigFile(
   "etcdcerts",
   { file: "etcd/certs.yml" },
-  { provider: k8sProvider, dependsOn: etcdNs }
+  { provider: k8sProvider, dependsOn: [caCerts, etcdNs] }
 );
 
 new k8s.helm.v3.Chart(
@@ -186,7 +186,7 @@ new k8s.helm.v3.Chart(
       }
     }
   },
-  { provider: k8sProvider }
+  { provider: k8sProvider, dependsOn: [caCerts, etcdNs] }
 );
 
 // ---------MINIO----------
@@ -240,7 +240,7 @@ new k8s.helm.v3.Chart(
           return buff.toString("ascii");
         })
       },
-      accessToken: cf.require("minio-access-key"),
+      accessKey: cf.require("minio-access-key"),
       secretKey: cf.require("minio-secret-key"),
       resources: { requests: { memory: 256 } }
     }
@@ -298,13 +298,14 @@ new k8s.yaml.ConfigFile(
   { provider: k8sProvider, dependsOn: tsNs }
 );
 
-new k8s.helm.v3.Chart(
+const tsChart = new k8s.helm.v3.Chart(
   "timescale",
   {
     namespace: tsNs.metadata.name,
     chart: "timescaledb-single",
     fetchOpts: { repo: "https://charts.timescale.com" },
     values: {
+      image: { tag: "pg12.4-ts1.7.4-p1" },
       replicaCount: 2,
       loadBalancer: {
         enabled: true
@@ -350,14 +351,87 @@ new k8s.helm.v3.Chart(
   { provider: k8sProvider }
 );
 
-new K8SExec("promscale-users", {
-  namespace: tsNs.metadata.name,
-  podSelector: "role=master",
-  container: "timescaledb",
-  kubeConfig: k8sConfig,
-  cmd: ["psql", "-c", "SELECT datname FROM pg_database"]
-});
+new K8SExec(
+  "promscale-db",
+  {
+    namespace: tsNs.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: k8sConfig,
+    cmd: ["psql", "-c", "CREATE DATABASE analytics;"]
+  },
+  { dependsOn: tsChart }
+);
 
+new K8SExec(
+  "promscale-user",
+  {
+    namespace: tsNs.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: k8sConfig,
+    cmd: [
+      "psql",
+      "-c",
+      `create user promscale with password '${cf
+        .require("promscale_postgres_password")
+        .toString()}' SUPERUSER;`
+    ]
+  },
+  { dependsOn: tsChart }
+);
+
+new K8SExec(
+  "promscale-grant",
+  {
+    namespace: tsNs.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: k8sConfig,
+    cmd: [
+      "psql",
+      "-c",
+      `GRANT ALL PRIVILEGES ON DATABASE analytics TO promscale`
+    ]
+  },
+  { dependsOn: tsChart }
+);
+
+new k8s.core.v1.Secret(
+  "promscale-credentials",
+  {
+    metadata: {
+      namespace: tsNs.metadata.name,
+      name: "promscale-timescaledb-passwords"
+    },
+    stringData: {
+      promscale: cf.require("promscale_postgres_password")
+    }
+  },
+  { provider: k8sProvider }
+);
+
+new k8s.helm.v3.Chart(
+  "promscale",
+  {
+    namespace: tsNs.metadata.name,
+    chart: "promscale",
+    fetchOpts: { repo: "https://charts.timescale.com" },
+    values: {
+      image: "timescale/promscale:0.1.2",
+      connection: {
+        user: "promscale",
+        host: { nameTemplate: "timescale.timescale" },
+        password: { secretTemplate: "promscale-timescaledb-passwords" },
+        dbName: "analytics"
+      },
+      service: {
+        loadBalancer: { enabled: false }
+      }
+    }
+  },
+  { provider: k8sProvider }
+);
 
 // -------- GRAFANA --------
 const monNs = new k8s.core.v1.Namespace(
@@ -374,13 +448,13 @@ const grafanaCreds = new k8s.core.v1.Secret(
       name: "grafana-credentials"
     },
     stringData: {
-      GF_DATABASE_TYPE:     "postgres",
-      GF_DATABASE_HOST:     "timescale.timescale",
-      GF_DATABASE_USER:     "postgres",
-      GF_DATABASE_NAME:     "postgres",
+      GF_DATABASE_TYPE: "postgres",
+      GF_DATABASE_HOST: "timescale.timescale",
+      GF_DATABASE_USER: "postgres",
+      GF_DATABASE_NAME: "postgres",
       GF_DATABASE_SSL_MODE: "require",
-      GF_DATABASE_PASSWORD: cf.require("patroni_superuser_password"),
-    },
+      GF_DATABASE_PASSWORD: cf.require("patroni_superuser_password")
+    }
   },
   { provider: k8sProvider }
 );
@@ -392,9 +466,9 @@ new k8s.helm.v3.Chart(
     chart: "grafana",
     fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
     values: {
-      envFromSecret: "grafana-credentials",
-      adminUser:     "admin",
-      adminPassword: cf.require("grafana-admin-pass"),
+      envFromSecret: grafanaCreds.metadata.name,
+      adminUser: "admin",
+      adminPassword: cf.require("grafana-admin-pass")
     }
   },
   { provider: k8sProvider }
@@ -425,8 +499,8 @@ const lokiCreds = new k8s.core.v1.Secret(
       gcsKeyJson: lokiKey.privateKey.apply((s: string) => {
         let buff = new Buffer(s, "base64");
         return buff.toString("ascii");
-      }),
-    },
+      })
+    }
   },
   { provider: k8sProvider }
 );
@@ -445,11 +519,11 @@ new k8s.helm.v3.Chart(
     values: {
       storage_config: {
         boltdb_shipper: {
-          shared_store: "gcs",
+          shared_store: "gcs"
         },
         gcs: {
-          bucket_name: lokiBucket.name,
-        },
+          bucket_name: lokiBucket.name
+        }
       },
       schema_config: {
         configs: [
@@ -460,11 +534,11 @@ new k8s.helm.v3.Chart(
               schema: "v11",
               index: {
                 prefix: "index_",
-                period: "24h",
-              },
-            },
-          },
-        ],
+                period: "24h"
+              }
+            }
+          }
+        ]
       },
       env: [
         {
@@ -472,12 +546,12 @@ new k8s.helm.v3.Chart(
           valueFrom: {
             secretKeyRef: {
               name: lokiCreds.metadata.name,
-              key:  "gcsKeyJson",
-            },
-          },
-        },
-      ],
-    },
+              key: "gcsKeyJson"
+            }
+          }
+        }
+      ]
+    }
   },
   { provider: k8sProvider }
 );

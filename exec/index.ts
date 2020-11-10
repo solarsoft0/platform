@@ -79,13 +79,13 @@ class K8SExecProvider implements pulumi.dynamic.ResourceProvider {
 
     exec.exec(pod.metadata?.namespace!, pod.metadata?.name!, inputs.container.toString(), inputs.cmd,
       process.stdout as stream.Writable, process.stderr as stream.Writable, process.stdin as stream.Readable,
-    true /* tty */,
+    false /* tty */,
     (status: k8s.V1Status) => {
         // tslint:disable-next-line:no-console
-        console.log('Exited with status:');
+      if(status.status !== "Success"){
+        throw new Error("Exec failed: " + JSON.stringify(status, null, 2))
+      }
       results.push(JSON.stringify(status, null, 2))
-        // tslint:disable-next-line:no-console
-        console.log(JSON.stringify(status, null, 2));
     });
 
 
