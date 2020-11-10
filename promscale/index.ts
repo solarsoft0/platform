@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { K8SExec } from '../exec';
 import { namespace as tsNamespace, default as ts } from '../timescale';
-import monitoring from '../monitoring';
+import monitoring, { namespace } from '../monitoring';
 import { kubeconfig, provider } from '../cluster';
 
 const cf = new pulumi.Config("dply");
@@ -45,7 +45,7 @@ export const creds = new k8s.core.v1.Secret(
   "promscale-credentials",
   {
     metadata: {
-      namespace: tsNamespace.metadata.name,
+      namespace: namespace.metadata.name,
       name: "promscale-timescaledb-passwords"
     },
     stringData: {
@@ -58,7 +58,7 @@ export const creds = new k8s.core.v1.Secret(
 export const chart = new k8s.helm.v3.Chart(
   "promscale",
   {
-    namespace: tsNamespace.metadata.name,
+    namespace: namespace.metadata.name,
     chart: "promscale",
     fetchOpts: { repo: "https://charts.timescale.com" },
     values: {
