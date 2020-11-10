@@ -11,3 +11,4 @@ import "./promscale";
 import "./promtail";
 import "./timescale";
 import "./cockroach";
+import "./tailscale";
