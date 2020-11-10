@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";  
 import { provider } from '../cluster';
+import * as crd from '../crd';
 
 const cf = new pulumi.Config("dply");
 const gcpConf = new pulumi.Config("gcp");
@@ -12,10 +13,34 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const tls = new k8s.yaml.ConfigFile(
+export const tls = new crd.certmanager.v1.Certificate(
   "timescale-tls",
-  { file: "timescale/certs.yml" },
-  { provider, dependsOn: namespace }
+  {
+    metadata: {
+      name: "timescale-tls",
+      namespace: namespace.metadata.name,
+    },
+    spec: {
+      secretName: "timescale-tls",
+      subject: {
+        organizations: ["m3o"],
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256,
+      },
+      dnsNames: [
+        "timescale.timescale.svc.cluster.local",
+        "timescale",
+      ],
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer",
+      },
+    },
+  },
+  { provider }
 );
 
 export const bucket = new gcp.storage.Bucket("timescalebackups", {
@@ -72,7 +97,7 @@ export const chart = new k8s.helm.v3.Chart(
       },
       secretNames: {
         credentials: creds.metadata.name,
-        certificate: "timescale-tls"
+        certificate: tls.spec.secretName,
       },
       backup: {
         enabled: true,

@@ -76,9 +76,7 @@ const mbCreds = new k8s.core.v1.Secret(
       name: "metabase-creds"
     },
     stringData: {
-      uri: "timescale.timescale:5432/analytics",
-      username: "metabase",
-      password: cf.require("metabase_db_password"),
+      uri: `postgres://metabase:${cf.require("metabase_db_password").toString()}@timescale.timescale:5432/metabase?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory`,
     },
   },
   { provider }
@@ -94,8 +92,6 @@ export const chart = new k8s.helm.v3.Chart(
       database: {
         type: "PostgreSQL",
         existingSecret: mbCreds.metadata.name,
-        existingSecretUsernameKey: "username",
-        existingSecretPasswordKey: "password",
         existingSecretConnectionURIKey: "uri",
       },
     },

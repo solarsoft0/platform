@@ -1,8 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
-import { caCerts } from '../certmanager';
+import certmanager, { caCerts } from '../certmanager';
+import * as crd from '../crd';
 
 export const namespace = new k8s.core.v1.Namespace(
   "etcd",
@@ -10,11 +9,36 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const certs = new k8s.yaml.ConfigFile(
+export const cert = new crd.certmanager.v1.Certificate(
   "etcdcerts",
-  { file: "etcd/certs.yml" },
-  { provider, dependsOn: [caCerts, namespace] }
-);
+  {
+    metadata: {
+      name: "etcd",
+      namespace: namespace.metadata.name,
+    },
+    spec: {
+      secretName: "etcd-tls",
+      subject: {
+        organizations: ["m3o"],
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256,
+      },
+      dnsNames: [
+        "etcd.etcd.svc.cluster.local",
+         "*.etcd-headless.etcd.svc.cluster.local",
+         "etcd",
+      ],
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer",
+      },
+    },
+  },
+  { provider, dependsOn: certmanager }
+)
 
 export const chart = new k8s.helm.v3.Chart(
   "etcd",
@@ -33,7 +57,7 @@ export const chart = new k8s.helm.v3.Chart(
         client: {
           secureTransport: true,
           enableAuthentication: true,
-          existingSecret: "etcd-client-certs",
+          existingSecret: cert.spec.secretName,
           certFilename: "tls.crt",
           certKeyFilename: "tls.key",
           caFilename: "ca.crt"
@@ -41,7 +65,7 @@ export const chart = new k8s.helm.v3.Chart(
         peer: {
           secureTransport: true,
           enableAuthentication: true,
-          existingSecret: "etcd-peer-certs",
+          existingSecret: cert.spec.secretName,
           certFilename: "tls.crt",
           certKeyFilename: "tls.key",
           caFilename: "ca.crt"
@@ -54,6 +78,6 @@ export const chart = new k8s.helm.v3.Chart(
 
 export default [
   namespace,
-  certs,
+  cert,
   chart,
 ]

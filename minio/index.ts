@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
+import * as crd from '../crd';
 
 const cf = new pulumi.Config("dply");
 const gcpConf = new pulumi.Config("gcp");
@@ -12,10 +13,34 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const certs = new k8s.yaml.ConfigFile(
-  "miniocerts",
-  { file: "minio/certs.yml" },
-  { provider, dependsOn: namespace }
+export const cert = new crd.certmanager.v1.Certificate(
+  "minio-tls",
+  {
+    metadata: {
+      name: "minio-tls",
+      namespace: namespace.metadata.name,
+    },
+    spec: {
+      secretName: "minio-tls",
+      subject: {
+        organizations: ["m3o"],
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256,
+      },
+      dnsNames: [
+        "minio.minio.svc.cluster.local",
+        "minio",
+      ],
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer",
+      },
+    },
+  },
+  { provider },
 );
 
 export const serviceAccount = new gcp.serviceaccount.Account("minio", {
@@ -42,7 +67,7 @@ export const chart = new k8s.helm.v3.Chart(
       service: { port: "443" },
       tls: {
         enabled: true,
-        certSecret: "minio-tls",
+        certSecret: cert.spec.secretName,
         publicCrt: "tls.crt",
         privateKey: "tls.key"
       },
@@ -66,7 +91,7 @@ export const chart = new k8s.helm.v3.Chart(
 
 export default [
   namespace,
-  certs,
+  cert,
   serviceAccount,
   binding,
   serviceAccountKey,
