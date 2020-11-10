@@ -12,3 +12,4 @@ import "./promtail";
 import "./timescale";
 import "./cockroach";
 import "./nats";
+import "./nginx";
