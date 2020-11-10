@@ -81,7 +81,12 @@ export const chart = new k8s.helm.v3.Chart(
     values: {
       envFromSecret: creds.metadata.name,
       adminUser: "admin",
-      adminPassword: cf.require("grafana-admin-pass")
+      adminPassword: cf.require("grafana-admin-pass"),
+      sidecar: {
+        datasources: {
+          enabled: true,
+        },
+      },
     }
   },
   { provider, dependsOn: [...timescale, dbAccess] }

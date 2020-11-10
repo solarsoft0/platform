@@ -3,6 +3,7 @@ import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";  
 import { provider } from '../cluster';
 import { namespace } from '../monitoring';
+import * as YAML from 'yamljs';
 
 const conf = new pulumi.Config("gcp");
 
@@ -88,6 +89,37 @@ export const chart = new k8s.helm.v3.Chart(
   { provider, dependsOn: [serviceAccountBinding] }
 );
 
+const datasource = YAML.stringify({
+  apiVersion: 1,
+  datasources: [
+    {
+      name: "Loki",
+      type: "loki",
+      access: "proxy",
+      url: "loki:3100",
+      version: 1,
+    },
+  ],
+});
+
+export const configMap = new k8s.core.v1.ConfigMap(
+  "loki-grafana",
+  {
+    metadata: {
+      name: "loki-grafana",
+      namespace: namespace.metadata.name,
+      labels: {
+        app: "loki",
+        grafana_datasource: "1",
+      },
+    },
+    data: {
+      "loki-datasource.yaml": datasource,
+    },
+  },
+  { provider, dependsOn: chart },
+);
+
 export default [
   serviceAccount,
   serviceAccountBinding,
@@ -95,4 +127,5 @@ export default [
   creds,
   bucket,
   chart,
+  configMap,
 ]

@@ -2,6 +2,7 @@ import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
 import { namespace } from '../monitoring';
 import promscale from '../promscale';
+import * as YAML from 'yamljs';
 
 export const chart = new k8s.helm.v3.Chart(
   "prometheus",
@@ -21,3 +22,39 @@ remote_read:
   },
   { provider, dependsOn: promscale },
 );
+
+const datasource = YAML.stringify({
+  apiVersion: 1,
+  datasources: [
+    {
+      name: "Prometheus",
+      type: "prometheus",
+      access: "proxy",
+      url: "prometheus:80",
+      // version: "1",
+    },
+  ],
+});
+
+export const configMap = new k8s.core.v1.ConfigMap(
+  "prometheus-grafana",
+  {
+    metadata: {
+      name: "prometheus-grafana",
+      namespace: namespace.metadata.name,
+      labels: {
+        app: "prometheus",
+        grafana_datasource: "1",
+      },
+    },
+    data: {
+      "prometheus-datasource.yaml": datasource,
+    },
+  },
+  { provider, dependsOn: chart },
+);
+
+export default [
+  chart,
+  configMap,
+];
