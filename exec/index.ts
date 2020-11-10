@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@kubernetes/client-node";
 import * as crypto from "crypto";
 import * as stream from 'stream';
+import * as retry from 'async-retry';
 
 export interface K8SExecArgs {
   namespace: pulumi.Input<string>;
@@ -59,14 +60,15 @@ class K8SExecProvider implements pulumi.dynamic.ResourceProvider {
     kc.loadFromString(inputs.kubeConfig.toString());
 
     const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
-    const pods = await k8sApi.listNamespacedPod(
+
+    const pods = await retry(() => k8sApi.listNamespacedPod(
       inputs.namespace.toString(),
       undefined,
       undefined,
       undefined,
       "",
       inputs.podSelector.toString()
-    );
+    ), {retries: 10, maxTimeout: 10000});
 
     if (!pods.body.items.length) {
       throw new Error("no pods found for selector");
