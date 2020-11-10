@@ -287,6 +287,1339 @@ export namespace certmanager {
         }
 
         /**
+         * Desired state of the ClusterIssuer resource.
+         */
+        export interface ClusterIssuerSpec {
+            /**
+             * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcme>;
+            /**
+             * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+             */
+            ca?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecCa>;
+            /**
+             * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+             */
+            selfSigned?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecSelfSigned>;
+            /**
+             * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+             */
+            vault?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVault>;
+            /**
+             * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+             */
+            venafi?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVenafi>;
+        }
+
+        /**
+         * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+         */
+        export interface ClusterIssuerSpecAcme {
+            /**
+             * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+             */
+            disableAccountKeyGeneration?: pulumi.Input<boolean>;
+            /**
+             * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+             */
+            email?: pulumi.Input<string>;
+            /**
+             * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+             */
+            externalAccountBinding?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeExternalAccountBinding>;
+            /**
+             * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+             */
+            preferredChain?: pulumi.Input<string>;
+            /**
+             * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+             */
+            privateKeySecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmePrivateKeySecretRef>;
+            /**
+             * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+             */
+            server: pulumi.Input<string>;
+            /**
+             * Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have their TLS certificate validated (i.e. insecure connections will be allowed). Only enable this option in development environments. The cert-manager system installed roots will be used to verify connections to the ACME server if this is false. Defaults to false.
+             */
+            skipTLSVerify?: pulumi.Input<boolean>;
+            /**
+             * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+             */
+            solvers?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolvers>[]>;
+        }
+
+        /**
+         * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBinding {
+            /**
+             * keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+             */
+            keyAlgorithm: pulumi.Input<string>;
+            /**
+             * keyID is the ID of the CA key that the External Account is bound to.
+             */
+            keyID: pulumi.Input<string>;
+            /**
+             * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+             */
+            keySecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef>;
+        }
+
+        /**
+         * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+         */
+        export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures an issuer to solve challenges using the specified options. Only one of HTTP01 or DNS01 may be provided.
+         */
+        export interface ClusterIssuerSpecAcmeSolvers {
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+             */
+            dns01?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01>;
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+             */
+            http01?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01>;
+            /**
+             * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+             */
+            selector?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversSelector>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01 {
+            /**
+             * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+             */
+            acmeDNS?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AcmeDNS>;
+            /**
+             * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+             */
+            akamai?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Akamai>;
+            /**
+             * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+             */
+            azureDNS?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AzureDNS>;
+            /**
+             * Use the Google Cloud DNS API to manage DNS01 challenge records.
+             */
+            cloudDNS?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01CloudDNS>;
+            /**
+             * Use the Cloudflare API to manage DNS01 challenge records.
+             */
+            cloudflare?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Cloudflare>;
+            /**
+             * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+             */
+            cnameStrategy?: pulumi.Input<string>;
+            /**
+             * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+             */
+            digitalocean?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Digitalocean>;
+            /**
+             * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+             */
+            rfc2136?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Rfc2136>;
+            /**
+             * Use the AWS Route53 API to manage DNS01 challenge records.
+             */
+            route53?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Route53>;
+            /**
+             * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+             */
+            webhook?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Webhook>;
+        }
+
+        /**
+         * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmeDNS {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accountSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AcmeDNSAccountSecretRef>;
+            host: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmeDNSAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accessTokenSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientSecretSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientTokenSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef>;
+            serviceConsumerDomain: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzureDNS {
+            /**
+             * if both this and ClientSecret are left unset MSI will be used
+             */
+            clientID?: pulumi.Input<string>;
+            /**
+             * if both this and ClientID are left unset MSI will be used
+             */
+            clientSecretSecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01AzureDNSClientSecretSecretRef>;
+            environment?: pulumi.Input<string>;
+            hostedZoneName?: pulumi.Input<string>;
+            resourceGroupName: pulumi.Input<string>;
+            subscriptionID: pulumi.Input<string>;
+            /**
+             * when specifying ClientID and ClientSecret then this field is also needed
+             */
+            tenantID?: pulumi.Input<string>;
+        }
+
+        /**
+         * if both this and ClientID are left unset MSI will be used
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzureDNSClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Google Cloud DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudDNS {
+            /**
+             * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+             */
+            hostedZoneName?: pulumi.Input<string>;
+            project: pulumi.Input<string>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            serviceAccountSecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01CloudDNSServiceAccountSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudDNSServiceAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Cloudflare API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
+            /**
+             * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+             */
+            apiKeySecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef>;
+            /**
+             * API token used to authenticate with Cloudflare.
+             */
+            apiTokenSecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef>;
+            /**
+             * Email of the account, only required when using API key based authentication.
+             */
+            email?: pulumi.Input<string>;
+        }
+
+        /**
+         * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * API token used to authenticate with Cloudflare.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            tokenSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
+            /**
+             * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+             */
+            nameserver: pulumi.Input<string>;
+            /**
+             * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+             */
+            tsigAlgorithm?: pulumi.Input<string>;
+            /**
+             * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+             */
+            tsigKeyName?: pulumi.Input<string>;
+            /**
+             * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+             */
+            tsigSecretSecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef>;
+        }
+
+        /**
+         * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the AWS Route53 API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
+            /**
+             * The AccessKeyID is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            accessKeyID?: pulumi.Input<string>;
+            /**
+             * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+             */
+            hostedZoneID?: pulumi.Input<string>;
+            /**
+             * Always set the region when using AccessKeyID and SecretAccessKey
+             */
+            region: pulumi.Input<string>;
+            /**
+             * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+             */
+            role?: pulumi.Input<string>;
+            /**
+             * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            secretAccessKeySecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef>;
+        }
+
+        /**
+         * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
+            /**
+             * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+             */
+            config?: pulumi.Input<{[key: string]: any}>;
+            /**
+             * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+             */
+            groupName: pulumi.Input<string>;
+            /**
+             * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+             */
+            solverName: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01 {
+            /**
+             * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+             */
+            ingress?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01Ingress>;
+        }
+
+        /**
+         * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
+            /**
+             * The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified.
+             */
+            class?: pulumi.Input<string>;
+            /**
+             * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+             */
+            ingressTemplate?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate>;
+            /**
+             * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources.
+             */
+            name?: pulumi.Input<string>;
+            /**
+             * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+             */
+            podTemplate?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate>;
+            /**
+             * Optional service type for Kubernetes solver service
+             */
+            serviceType?: pulumi.Input<string>;
+        }
+
+        /**
+         * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
+            /**
+             * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata>;
+        }
+
+        /**
+         * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata {
+            /**
+             * Annotations that should be added to the created ACME HTTP01 solver ingress.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver ingress.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
+            /**
+             * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata>;
+            /**
+             * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+             */
+            spec?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec>;
+        }
+
+        /**
+         * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
+            /**
+             * Annotations that should be added to the create ACME HTTP01 solver pods.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver pods.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
+            /**
+             * If specified, the pod's scheduling constraints
+             */
+            affinity?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity>;
+            /**
+             * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+             */
+            nodeSelector?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * If specified, the pod's priorityClassName.
+             */
+            priorityClassName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's service account
+             */
+            serviceAccountName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's tolerations.
+             */
+            tolerations?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations>[]>;
+        }
+
+        /**
+         * If specified, the pod's scheduling constraints
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity {
+            /**
+             * Describes node affinity scheduling rules for the pod.
+             */
+            nodeAffinity?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity>;
+            /**
+             * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAffinity?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity>;
+            /**
+             * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAntiAffinity?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity>;
+        }
+
+        /**
+         * Describes node affinity scheduling rules for the pod.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution>;
+        }
+
+        /**
+         * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A node selector term, associated with the corresponding weight.
+             */
+            preference: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference>;
+            /**
+             * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * A node selector term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A list of node selector terms. The terms are ORed.
+             */
+            nodeSelectorTerms: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms>[]>;
+        }
+
+        /**
+         * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
+            /**
+             * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+             */
+            effect?: pulumi.Input<string>;
+            /**
+             * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+             */
+            operator?: pulumi.Input<string>;
+            /**
+             * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+             */
+            tolerationSeconds?: pulumi.Input<number>;
+            /**
+             * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+             */
+            value?: pulumi.Input<string>;
+        }
+
+        /**
+         * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+         */
+        export interface ClusterIssuerSpecAcmeSolversSelector {
+            /**
+             * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsNames?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsZones?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+         */
+        export interface ClusterIssuerSpecCa {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+             */
+            secretName: pulumi.Input<string>;
+        }
+
+        /**
+         * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+         */
+        export interface ClusterIssuerSpecSelfSigned {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+         */
+        export interface ClusterIssuerSpecVault {
+            /**
+             * Auth configures how cert-manager authenticates with the Vault server.
+             */
+            auth: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuth>;
+            /**
+             * PEM encoded CA bundle used to validate Vault server certificate. Only used if the Server URL is using HTTPS protocol. This parameter is ignored for plain HTTP protocol connection. If not set the system root certificates are used to validate the TLS connection.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+             */
+            namespace?: pulumi.Input<string>;
+            /**
+             * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+             */
+            path: pulumi.Input<string>;
+            /**
+             * Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
+             */
+            server: pulumi.Input<string>;
+        }
+
+        /**
+         * Auth configures how cert-manager authenticates with the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuth {
+            /**
+             * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+             */
+            appRole?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuthAppRole>;
+            /**
+             * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+             */
+            kubernetes?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuthKubernetes>;
+            /**
+             * TokenSecretRef authenticates with Vault by presenting a token.
+             */
+            tokenSecretRef?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuthTokenSecretRef>;
+        }
+
+        /**
+         * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRole {
+            /**
+             * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+             */
+            path: pulumi.Input<string>;
+            /**
+             * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+             */
+            roleId: pulumi.Input<string>;
+            /**
+             * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuthAppRoleSecretRef>;
+        }
+
+        /**
+         * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetes {
+            /**
+             * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+             */
+            mountPath?: pulumi.Input<string>;
+            /**
+             * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+             */
+            role: pulumi.Input<string>;
+            /**
+             * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVaultAuthKubernetesSecretRef>;
+        }
+
+        /**
+         * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TokenSecretRef authenticates with Vault by presenting a token.
+         */
+        export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+         */
+        export interface ClusterIssuerSpecVenafi {
+            /**
+             * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            cloud?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVenafiCloud>;
+            /**
+             * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            tpp?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVenafiTpp>;
+            /**
+             * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+             */
+            zone: pulumi.Input<string>;
+        }
+
+        /**
+         * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiCloud {
+            /**
+             * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+             */
+            apiTokenSecretRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVenafiCloudApiTokenSecretRef>;
+            /**
+             * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+             */
+            url?: pulumi.Input<string>;
+        }
+
+        /**
+         * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+         */
+        export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiTpp {
+            /**
+             * CABundle is a PEM encoded TLS certificate to use to verify connections to the TPP instance. If specified, system roots will not be used and the issuing CA for the TPP instance must be verifiable using the provided root. If not specified, the connection will be verified using the cert-manager system root certificates.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+             */
+            credentialsRef: pulumi.Input<inputs.certmanager.v1.ClusterIssuerSpecVenafiTppCredentialsRef>;
+            /**
+             * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+             */
+            url: pulumi.Input<string>;
+        }
+
+        /**
+         * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+         */
+        export interface ClusterIssuerSpecVenafiTppCredentialsRef {
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Status of the ClusterIssuer. This is set and managed automatically.
+         */
+        export interface ClusterIssuerStatus {
+            /**
+             * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1.ClusterIssuerStatusAcme>;
+            /**
+             * List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready`.
+             */
+            conditions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1.ClusterIssuerStatusConditions>[]>;
+        }
+
+        /**
+         * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+         */
+        export interface ClusterIssuerStatusAcme {
+            /**
+             * LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer
+             */
+            lastRegisteredEmail?: pulumi.Input<string>;
+            /**
+             * URI is the unique account identifier, which can also be used to retrieve account details from the CA
+             */
+            uri?: pulumi.Input<string>;
+        }
+
+        /**
+         * IssuerCondition contains condition information for an Issuer.
+         */
+        export interface ClusterIssuerStatusConditions {
+            /**
+             * LastTransitionTime is the timestamp corresponding to the last status change of this condition.
+             */
+            lastTransitionTime?: pulumi.Input<string>;
+            /**
+             * Message is a human readable description of the details of the last transition, complementing reason.
+             */
+            message?: pulumi.Input<string>;
+            /**
+             * Reason is a brief machine readable explanation for the condition's last transition.
+             */
+            reason?: pulumi.Input<string>;
+            /**
+             * Status of the condition, one of ('True', 'False', 'Unknown').
+             */
+            status: pulumi.Input<string>;
+            /**
+             * Type of the condition, known values are ('Ready').
+             */
+            type: pulumi.Input<string>;
+        }
+
+        /**
          * Desired state of the Issuer resource.
          */
         export interface IssuerSpec {
@@ -1894,6 +3227,1339 @@ export namespace certmanager {
             status: pulumi.Input<string>;
             /**
              * Type of the condition, known values are ('Ready', `Issuing`).
+             */
+            type: pulumi.Input<string>;
+        }
+
+        /**
+         * Desired state of the ClusterIssuer resource.
+         */
+        export interface ClusterIssuerSpec {
+            /**
+             * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcme>;
+            /**
+             * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+             */
+            ca?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecCa>;
+            /**
+             * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+             */
+            selfSigned?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecSelfSigned>;
+            /**
+             * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+             */
+            vault?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVault>;
+            /**
+             * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+             */
+            venafi?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVenafi>;
+        }
+
+        /**
+         * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+         */
+        export interface ClusterIssuerSpecAcme {
+            /**
+             * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+             */
+            disableAccountKeyGeneration?: pulumi.Input<boolean>;
+            /**
+             * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+             */
+            email?: pulumi.Input<string>;
+            /**
+             * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+             */
+            externalAccountBinding?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeExternalAccountBinding>;
+            /**
+             * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+             */
+            preferredChain?: pulumi.Input<string>;
+            /**
+             * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+             */
+            privateKeySecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmePrivateKeySecretRef>;
+            /**
+             * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+             */
+            server: pulumi.Input<string>;
+            /**
+             * Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have their TLS certificate validated (i.e. insecure connections will be allowed). Only enable this option in development environments. The cert-manager system installed roots will be used to verify connections to the ACME server if this is false. Defaults to false.
+             */
+            skipTLSVerify?: pulumi.Input<boolean>;
+            /**
+             * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+             */
+            solvers?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolvers>[]>;
+        }
+
+        /**
+         * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBinding {
+            /**
+             * keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+             */
+            keyAlgorithm: pulumi.Input<string>;
+            /**
+             * keyID is the ID of the CA key that the External Account is bound to.
+             */
+            keyID: pulumi.Input<string>;
+            /**
+             * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+             */
+            keySecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef>;
+        }
+
+        /**
+         * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+         */
+        export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures an issuer to solve challenges using the specified options. Only one of HTTP01 or DNS01 may be provided.
+         */
+        export interface ClusterIssuerSpecAcmeSolvers {
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+             */
+            dns01?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01>;
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+             */
+            http01?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01>;
+            /**
+             * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+             */
+            selector?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversSelector>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01 {
+            /**
+             * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+             */
+            acmedns?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Acmedns>;
+            /**
+             * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+             */
+            akamai?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Akamai>;
+            /**
+             * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+             */
+            azuredns?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Azuredns>;
+            /**
+             * Use the Google Cloud DNS API to manage DNS01 challenge records.
+             */
+            clouddns?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Clouddns>;
+            /**
+             * Use the Cloudflare API to manage DNS01 challenge records.
+             */
+            cloudflare?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Cloudflare>;
+            /**
+             * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+             */
+            cnameStrategy?: pulumi.Input<string>;
+            /**
+             * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+             */
+            digitalocean?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Digitalocean>;
+            /**
+             * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+             */
+            rfc2136?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Rfc2136>;
+            /**
+             * Use the AWS Route53 API to manage DNS01 challenge records.
+             */
+            route53?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Route53>;
+            /**
+             * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+             */
+            webhook?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Webhook>;
+        }
+
+        /**
+         * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Acmedns {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accountSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01AcmednsAccountSecretRef>;
+            host: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmednsAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accessTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientSecretSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef>;
+            serviceConsumerDomain: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Azuredns {
+            /**
+             * if both this and ClientSecret are left unset MSI will be used
+             */
+            clientID?: pulumi.Input<string>;
+            /**
+             * if both this and ClientID are left unset MSI will be used
+             */
+            clientSecretSecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01AzurednsClientSecretSecretRef>;
+            environment?: pulumi.Input<string>;
+            hostedZoneName?: pulumi.Input<string>;
+            resourceGroupName: pulumi.Input<string>;
+            subscriptionID: pulumi.Input<string>;
+            /**
+             * when specifying ClientID and ClientSecret then this field is also needed
+             */
+            tenantID?: pulumi.Input<string>;
+        }
+
+        /**
+         * if both this and ClientID are left unset MSI will be used
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzurednsClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Google Cloud DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Clouddns {
+            /**
+             * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+             */
+            hostedZoneName?: pulumi.Input<string>;
+            project: pulumi.Input<string>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            serviceAccountSecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01ClouddnsServiceAccountSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01ClouddnsServiceAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Cloudflare API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
+            /**
+             * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+             */
+            apiKeySecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef>;
+            /**
+             * API token used to authenticate with Cloudflare.
+             */
+            apiTokenSecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef>;
+            /**
+             * Email of the account, only required when using API key based authentication.
+             */
+            email?: pulumi.Input<string>;
+        }
+
+        /**
+         * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * API token used to authenticate with Cloudflare.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            tokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
+            /**
+             * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+             */
+            nameserver: pulumi.Input<string>;
+            /**
+             * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+             */
+            tsigAlgorithm?: pulumi.Input<string>;
+            /**
+             * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+             */
+            tsigKeyName?: pulumi.Input<string>;
+            /**
+             * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+             */
+            tsigSecretSecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef>;
+        }
+
+        /**
+         * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the AWS Route53 API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
+            /**
+             * The AccessKeyID is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            accessKeyID?: pulumi.Input<string>;
+            /**
+             * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+             */
+            hostedZoneID?: pulumi.Input<string>;
+            /**
+             * Always set the region when using AccessKeyID and SecretAccessKey
+             */
+            region: pulumi.Input<string>;
+            /**
+             * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+             */
+            role?: pulumi.Input<string>;
+            /**
+             * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            secretAccessKeySecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef>;
+        }
+
+        /**
+         * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
+            /**
+             * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+             */
+            config?: pulumi.Input<{[key: string]: any}>;
+            /**
+             * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+             */
+            groupName: pulumi.Input<string>;
+            /**
+             * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+             */
+            solverName: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01 {
+            /**
+             * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+             */
+            ingress?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01Ingress>;
+        }
+
+        /**
+         * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
+            /**
+             * The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified.
+             */
+            class?: pulumi.Input<string>;
+            /**
+             * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+             */
+            ingressTemplate?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate>;
+            /**
+             * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources.
+             */
+            name?: pulumi.Input<string>;
+            /**
+             * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+             */
+            podTemplate?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate>;
+            /**
+             * Optional service type for Kubernetes solver service
+             */
+            serviceType?: pulumi.Input<string>;
+        }
+
+        /**
+         * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
+            /**
+             * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata>;
+        }
+
+        /**
+         * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata {
+            /**
+             * Annotations that should be added to the created ACME HTTP01 solver ingress.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver ingress.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
+            /**
+             * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata>;
+            /**
+             * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+             */
+            spec?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec>;
+        }
+
+        /**
+         * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
+            /**
+             * Annotations that should be added to the create ACME HTTP01 solver pods.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver pods.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
+            /**
+             * If specified, the pod's scheduling constraints
+             */
+            affinity?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity>;
+            /**
+             * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+             */
+            nodeSelector?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * If specified, the pod's priorityClassName.
+             */
+            priorityClassName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's service account
+             */
+            serviceAccountName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's tolerations.
+             */
+            tolerations?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations>[]>;
+        }
+
+        /**
+         * If specified, the pod's scheduling constraints
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity {
+            /**
+             * Describes node affinity scheduling rules for the pod.
+             */
+            nodeAffinity?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity>;
+            /**
+             * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAffinity?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity>;
+            /**
+             * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAntiAffinity?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity>;
+        }
+
+        /**
+         * Describes node affinity scheduling rules for the pod.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution>;
+        }
+
+        /**
+         * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A node selector term, associated with the corresponding weight.
+             */
+            preference: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference>;
+            /**
+             * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * A node selector term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A list of node selector terms. The terms are ORed.
+             */
+            nodeSelectorTerms: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms>[]>;
+        }
+
+        /**
+         * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
+            /**
+             * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+             */
+            effect?: pulumi.Input<string>;
+            /**
+             * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+             */
+            operator?: pulumi.Input<string>;
+            /**
+             * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+             */
+            tolerationSeconds?: pulumi.Input<number>;
+            /**
+             * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+             */
+            value?: pulumi.Input<string>;
+        }
+
+        /**
+         * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+         */
+        export interface ClusterIssuerSpecAcmeSolversSelector {
+            /**
+             * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsNames?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsZones?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+         */
+        export interface ClusterIssuerSpecCa {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+             */
+            secretName: pulumi.Input<string>;
+        }
+
+        /**
+         * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+         */
+        export interface ClusterIssuerSpecSelfSigned {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+         */
+        export interface ClusterIssuerSpecVault {
+            /**
+             * Auth configures how cert-manager authenticates with the Vault server.
+             */
+            auth: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuth>;
+            /**
+             * PEM encoded CA bundle used to validate Vault server certificate. Only used if the Server URL is using HTTPS protocol. This parameter is ignored for plain HTTP protocol connection. If not set the system root certificates are used to validate the TLS connection.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+             */
+            namespace?: pulumi.Input<string>;
+            /**
+             * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+             */
+            path: pulumi.Input<string>;
+            /**
+             * Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
+             */
+            server: pulumi.Input<string>;
+        }
+
+        /**
+         * Auth configures how cert-manager authenticates with the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuth {
+            /**
+             * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+             */
+            appRole?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuthAppRole>;
+            /**
+             * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+             */
+            kubernetes?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuthKubernetes>;
+            /**
+             * TokenSecretRef authenticates with Vault by presenting a token.
+             */
+            tokenSecretRef?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuthTokenSecretRef>;
+        }
+
+        /**
+         * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRole {
+            /**
+             * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+             */
+            path: pulumi.Input<string>;
+            /**
+             * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+             */
+            roleId: pulumi.Input<string>;
+            /**
+             * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuthAppRoleSecretRef>;
+        }
+
+        /**
+         * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetes {
+            /**
+             * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+             */
+            mountPath?: pulumi.Input<string>;
+            /**
+             * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+             */
+            role: pulumi.Input<string>;
+            /**
+             * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVaultAuthKubernetesSecretRef>;
+        }
+
+        /**
+         * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TokenSecretRef authenticates with Vault by presenting a token.
+         */
+        export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+         */
+        export interface ClusterIssuerSpecVenafi {
+            /**
+             * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            cloud?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVenafiCloud>;
+            /**
+             * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            tpp?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVenafiTpp>;
+            /**
+             * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+             */
+            zone: pulumi.Input<string>;
+        }
+
+        /**
+         * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiCloud {
+            /**
+             * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+             */
+            apiTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVenafiCloudApiTokenSecretRef>;
+            /**
+             * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+             */
+            url?: pulumi.Input<string>;
+        }
+
+        /**
+         * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+         */
+        export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiTpp {
+            /**
+             * CABundle is a PEM encoded TLS certificate to use to verify connections to the TPP instance. If specified, system roots will not be used and the issuing CA for the TPP instance must be verifiable using the provided root. If not specified, the connection will be verified using the cert-manager system root certificates.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+             */
+            credentialsRef: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerSpecVenafiTppCredentialsRef>;
+            /**
+             * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+             */
+            url: pulumi.Input<string>;
+        }
+
+        /**
+         * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+         */
+        export interface ClusterIssuerSpecVenafiTppCredentialsRef {
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Status of the ClusterIssuer. This is set and managed automatically.
+         */
+        export interface ClusterIssuerStatus {
+            /**
+             * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerStatusAcme>;
+            /**
+             * List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready`.
+             */
+            conditions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha2.ClusterIssuerStatusConditions>[]>;
+        }
+
+        /**
+         * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+         */
+        export interface ClusterIssuerStatusAcme {
+            /**
+             * LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer
+             */
+            lastRegisteredEmail?: pulumi.Input<string>;
+            /**
+             * URI is the unique account identifier, which can also be used to retrieve account details from the CA
+             */
+            uri?: pulumi.Input<string>;
+        }
+
+        /**
+         * IssuerCondition contains condition information for an Issuer.
+         */
+        export interface ClusterIssuerStatusConditions {
+            /**
+             * LastTransitionTime is the timestamp corresponding to the last status change of this condition.
+             */
+            lastTransitionTime?: pulumi.Input<string>;
+            /**
+             * Message is a human readable description of the details of the last transition, complementing reason.
+             */
+            message?: pulumi.Input<string>;
+            /**
+             * Reason is a brief machine readable explanation for the condition's last transition.
+             */
+            reason?: pulumi.Input<string>;
+            /**
+             * Status of the condition, one of ('True', 'False', 'Unknown').
+             */
+            status: pulumi.Input<string>;
+            /**
+             * Type of the condition, known values are ('Ready').
              */
             type: pulumi.Input<string>;
         }
@@ -3511,6 +6177,1339 @@ export namespace certmanager {
         }
 
         /**
+         * Desired state of the ClusterIssuer resource.
+         */
+        export interface ClusterIssuerSpec {
+            /**
+             * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcme>;
+            /**
+             * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+             */
+            ca?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecCa>;
+            /**
+             * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+             */
+            selfSigned?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecSelfSigned>;
+            /**
+             * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+             */
+            vault?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVault>;
+            /**
+             * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+             */
+            venafi?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVenafi>;
+        }
+
+        /**
+         * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+         */
+        export interface ClusterIssuerSpecAcme {
+            /**
+             * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+             */
+            disableAccountKeyGeneration?: pulumi.Input<boolean>;
+            /**
+             * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+             */
+            email?: pulumi.Input<string>;
+            /**
+             * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+             */
+            externalAccountBinding?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeExternalAccountBinding>;
+            /**
+             * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+             */
+            preferredChain?: pulumi.Input<string>;
+            /**
+             * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+             */
+            privateKeySecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmePrivateKeySecretRef>;
+            /**
+             * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+             */
+            server: pulumi.Input<string>;
+            /**
+             * Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have their TLS certificate validated (i.e. insecure connections will be allowed). Only enable this option in development environments. The cert-manager system installed roots will be used to verify connections to the ACME server if this is false. Defaults to false.
+             */
+            skipTLSVerify?: pulumi.Input<boolean>;
+            /**
+             * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+             */
+            solvers?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolvers>[]>;
+        }
+
+        /**
+         * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBinding {
+            /**
+             * keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+             */
+            keyAlgorithm: pulumi.Input<string>;
+            /**
+             * keyID is the ID of the CA key that the External Account is bound to.
+             */
+            keyID: pulumi.Input<string>;
+            /**
+             * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+             */
+            keySecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef>;
+        }
+
+        /**
+         * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+         */
+        export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures an issuer to solve challenges using the specified options. Only one of HTTP01 or DNS01 may be provided.
+         */
+        export interface ClusterIssuerSpecAcmeSolvers {
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+             */
+            dns01?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01>;
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+             */
+            http01?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01>;
+            /**
+             * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+             */
+            selector?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversSelector>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01 {
+            /**
+             * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+             */
+            acmedns?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Acmedns>;
+            /**
+             * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+             */
+            akamai?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Akamai>;
+            /**
+             * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+             */
+            azuredns?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Azuredns>;
+            /**
+             * Use the Google Cloud DNS API to manage DNS01 challenge records.
+             */
+            clouddns?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Clouddns>;
+            /**
+             * Use the Cloudflare API to manage DNS01 challenge records.
+             */
+            cloudflare?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Cloudflare>;
+            /**
+             * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+             */
+            cnameStrategy?: pulumi.Input<string>;
+            /**
+             * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+             */
+            digitalocean?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Digitalocean>;
+            /**
+             * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+             */
+            rfc2136?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Rfc2136>;
+            /**
+             * Use the AWS Route53 API to manage DNS01 challenge records.
+             */
+            route53?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Route53>;
+            /**
+             * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+             */
+            webhook?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Webhook>;
+        }
+
+        /**
+         * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Acmedns {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accountSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01AcmednsAccountSecretRef>;
+            host: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmednsAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accessTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientSecretSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef>;
+            serviceConsumerDomain: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Azuredns {
+            /**
+             * if both this and ClientSecret are left unset MSI will be used
+             */
+            clientID?: pulumi.Input<string>;
+            /**
+             * if both this and ClientID are left unset MSI will be used
+             */
+            clientSecretSecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01AzurednsClientSecretSecretRef>;
+            environment?: pulumi.Input<string>;
+            hostedZoneName?: pulumi.Input<string>;
+            resourceGroupName: pulumi.Input<string>;
+            subscriptionID: pulumi.Input<string>;
+            /**
+             * when specifying ClientID and ClientSecret then this field is also needed
+             */
+            tenantID?: pulumi.Input<string>;
+        }
+
+        /**
+         * if both this and ClientID are left unset MSI will be used
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzurednsClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Google Cloud DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Clouddns {
+            /**
+             * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+             */
+            hostedZoneName?: pulumi.Input<string>;
+            project: pulumi.Input<string>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            serviceAccountSecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01ClouddnsServiceAccountSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01ClouddnsServiceAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Cloudflare API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
+            /**
+             * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+             */
+            apiKeySecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef>;
+            /**
+             * API token used to authenticate with Cloudflare.
+             */
+            apiTokenSecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef>;
+            /**
+             * Email of the account, only required when using API key based authentication.
+             */
+            email?: pulumi.Input<string>;
+        }
+
+        /**
+         * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * API token used to authenticate with Cloudflare.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            tokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
+            /**
+             * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+             */
+            nameserver: pulumi.Input<string>;
+            /**
+             * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+             */
+            tsigAlgorithm?: pulumi.Input<string>;
+            /**
+             * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+             */
+            tsigKeyName?: pulumi.Input<string>;
+            /**
+             * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+             */
+            tsigSecretSecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef>;
+        }
+
+        /**
+         * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the AWS Route53 API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
+            /**
+             * The AccessKeyID is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            accessKeyID?: pulumi.Input<string>;
+            /**
+             * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+             */
+            hostedZoneID?: pulumi.Input<string>;
+            /**
+             * Always set the region when using AccessKeyID and SecretAccessKey
+             */
+            region: pulumi.Input<string>;
+            /**
+             * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+             */
+            role?: pulumi.Input<string>;
+            /**
+             * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            secretAccessKeySecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef>;
+        }
+
+        /**
+         * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
+            /**
+             * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+             */
+            config?: pulumi.Input<{[key: string]: any}>;
+            /**
+             * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+             */
+            groupName: pulumi.Input<string>;
+            /**
+             * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+             */
+            solverName: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01 {
+            /**
+             * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+             */
+            ingress?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01Ingress>;
+        }
+
+        /**
+         * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
+            /**
+             * The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified.
+             */
+            class?: pulumi.Input<string>;
+            /**
+             * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+             */
+            ingressTemplate?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate>;
+            /**
+             * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources.
+             */
+            name?: pulumi.Input<string>;
+            /**
+             * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+             */
+            podTemplate?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate>;
+            /**
+             * Optional service type for Kubernetes solver service
+             */
+            serviceType?: pulumi.Input<string>;
+        }
+
+        /**
+         * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
+            /**
+             * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata>;
+        }
+
+        /**
+         * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata {
+            /**
+             * Annotations that should be added to the created ACME HTTP01 solver ingress.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver ingress.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
+            /**
+             * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata>;
+            /**
+             * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+             */
+            spec?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec>;
+        }
+
+        /**
+         * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
+            /**
+             * Annotations that should be added to the create ACME HTTP01 solver pods.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver pods.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
+            /**
+             * If specified, the pod's scheduling constraints
+             */
+            affinity?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity>;
+            /**
+             * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+             */
+            nodeSelector?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * If specified, the pod's priorityClassName.
+             */
+            priorityClassName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's service account
+             */
+            serviceAccountName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's tolerations.
+             */
+            tolerations?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations>[]>;
+        }
+
+        /**
+         * If specified, the pod's scheduling constraints
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity {
+            /**
+             * Describes node affinity scheduling rules for the pod.
+             */
+            nodeAffinity?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity>;
+            /**
+             * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAffinity?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity>;
+            /**
+             * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAntiAffinity?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity>;
+        }
+
+        /**
+         * Describes node affinity scheduling rules for the pod.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution>;
+        }
+
+        /**
+         * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A node selector term, associated with the corresponding weight.
+             */
+            preference: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference>;
+            /**
+             * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * A node selector term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A list of node selector terms. The terms are ORed.
+             */
+            nodeSelectorTerms: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms>[]>;
+        }
+
+        /**
+         * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
+            /**
+             * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+             */
+            effect?: pulumi.Input<string>;
+            /**
+             * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+             */
+            operator?: pulumi.Input<string>;
+            /**
+             * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+             */
+            tolerationSeconds?: pulumi.Input<number>;
+            /**
+             * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+             */
+            value?: pulumi.Input<string>;
+        }
+
+        /**
+         * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+         */
+        export interface ClusterIssuerSpecAcmeSolversSelector {
+            /**
+             * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsNames?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsZones?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+         */
+        export interface ClusterIssuerSpecCa {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+             */
+            secretName: pulumi.Input<string>;
+        }
+
+        /**
+         * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+         */
+        export interface ClusterIssuerSpecSelfSigned {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+         */
+        export interface ClusterIssuerSpecVault {
+            /**
+             * Auth configures how cert-manager authenticates with the Vault server.
+             */
+            auth: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuth>;
+            /**
+             * PEM encoded CA bundle used to validate Vault server certificate. Only used if the Server URL is using HTTPS protocol. This parameter is ignored for plain HTTP protocol connection. If not set the system root certificates are used to validate the TLS connection.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+             */
+            namespace?: pulumi.Input<string>;
+            /**
+             * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+             */
+            path: pulumi.Input<string>;
+            /**
+             * Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
+             */
+            server: pulumi.Input<string>;
+        }
+
+        /**
+         * Auth configures how cert-manager authenticates with the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuth {
+            /**
+             * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+             */
+            appRole?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuthAppRole>;
+            /**
+             * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+             */
+            kubernetes?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuthKubernetes>;
+            /**
+             * TokenSecretRef authenticates with Vault by presenting a token.
+             */
+            tokenSecretRef?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuthTokenSecretRef>;
+        }
+
+        /**
+         * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRole {
+            /**
+             * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+             */
+            path: pulumi.Input<string>;
+            /**
+             * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+             */
+            roleId: pulumi.Input<string>;
+            /**
+             * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuthAppRoleSecretRef>;
+        }
+
+        /**
+         * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetes {
+            /**
+             * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+             */
+            mountPath?: pulumi.Input<string>;
+            /**
+             * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+             */
+            role: pulumi.Input<string>;
+            /**
+             * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVaultAuthKubernetesSecretRef>;
+        }
+
+        /**
+         * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TokenSecretRef authenticates with Vault by presenting a token.
+         */
+        export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+         */
+        export interface ClusterIssuerSpecVenafi {
+            /**
+             * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            cloud?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVenafiCloud>;
+            /**
+             * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            tpp?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVenafiTpp>;
+            /**
+             * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+             */
+            zone: pulumi.Input<string>;
+        }
+
+        /**
+         * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiCloud {
+            /**
+             * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+             */
+            apiTokenSecretRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVenafiCloudApiTokenSecretRef>;
+            /**
+             * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+             */
+            url?: pulumi.Input<string>;
+        }
+
+        /**
+         * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+         */
+        export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiTpp {
+            /**
+             * CABundle is a PEM encoded TLS certificate to use to verify connections to the TPP instance. If specified, system roots will not be used and the issuing CA for the TPP instance must be verifiable using the provided root. If not specified, the connection will be verified using the cert-manager system root certificates.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+             */
+            credentialsRef: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerSpecVenafiTppCredentialsRef>;
+            /**
+             * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+             */
+            url: pulumi.Input<string>;
+        }
+
+        /**
+         * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+         */
+        export interface ClusterIssuerSpecVenafiTppCredentialsRef {
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Status of the ClusterIssuer. This is set and managed automatically.
+         */
+        export interface ClusterIssuerStatus {
+            /**
+             * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerStatusAcme>;
+            /**
+             * List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready`.
+             */
+            conditions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1alpha3.ClusterIssuerStatusConditions>[]>;
+        }
+
+        /**
+         * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+         */
+        export interface ClusterIssuerStatusAcme {
+            /**
+             * LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer
+             */
+            lastRegisteredEmail?: pulumi.Input<string>;
+            /**
+             * URI is the unique account identifier, which can also be used to retrieve account details from the CA
+             */
+            uri?: pulumi.Input<string>;
+        }
+
+        /**
+         * IssuerCondition contains condition information for an Issuer.
+         */
+        export interface ClusterIssuerStatusConditions {
+            /**
+             * LastTransitionTime is the timestamp corresponding to the last status change of this condition.
+             */
+            lastTransitionTime?: pulumi.Input<string>;
+            /**
+             * Message is a human readable description of the details of the last transition, complementing reason.
+             */
+            message?: pulumi.Input<string>;
+            /**
+             * Reason is a brief machine readable explanation for the condition's last transition.
+             */
+            reason?: pulumi.Input<string>;
+            /**
+             * Status of the condition, one of ('True', 'False', 'Unknown').
+             */
+            status: pulumi.Input<string>;
+            /**
+             * Type of the condition, known values are ('Ready').
+             */
+            type: pulumi.Input<string>;
+        }
+
+        /**
          * Desired state of the Issuer resource.
          */
         export interface IssuerSpec {
@@ -5118,6 +9117,1339 @@ export namespace certmanager {
             status: pulumi.Input<string>;
             /**
              * Type of the condition, known values are ('Ready', `Issuing`).
+             */
+            type: pulumi.Input<string>;
+        }
+
+        /**
+         * Desired state of the ClusterIssuer resource.
+         */
+        export interface ClusterIssuerSpec {
+            /**
+             * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcme>;
+            /**
+             * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+             */
+            ca?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecCa>;
+            /**
+             * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+             */
+            selfSigned?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecSelfSigned>;
+            /**
+             * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+             */
+            vault?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVault>;
+            /**
+             * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+             */
+            venafi?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVenafi>;
+        }
+
+        /**
+         * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+         */
+        export interface ClusterIssuerSpecAcme {
+            /**
+             * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+             */
+            disableAccountKeyGeneration?: pulumi.Input<boolean>;
+            /**
+             * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+             */
+            email?: pulumi.Input<string>;
+            /**
+             * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+             */
+            externalAccountBinding?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeExternalAccountBinding>;
+            /**
+             * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+             */
+            preferredChain?: pulumi.Input<string>;
+            /**
+             * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+             */
+            privateKeySecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmePrivateKeySecretRef>;
+            /**
+             * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+             */
+            server: pulumi.Input<string>;
+            /**
+             * Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have their TLS certificate validated (i.e. insecure connections will be allowed). Only enable this option in development environments. The cert-manager system installed roots will be used to verify connections to the ACME server if this is false. Defaults to false.
+             */
+            skipTLSVerify?: pulumi.Input<boolean>;
+            /**
+             * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+             */
+            solvers?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolvers>[]>;
+        }
+
+        /**
+         * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBinding {
+            /**
+             * keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+             */
+            keyAlgorithm: pulumi.Input<string>;
+            /**
+             * keyID is the ID of the CA key that the External Account is bound to.
+             */
+            keyID: pulumi.Input<string>;
+            /**
+             * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+             */
+            keySecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef>;
+        }
+
+        /**
+         * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+         */
+        export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+         */
+        export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures an issuer to solve challenges using the specified options. Only one of HTTP01 or DNS01 may be provided.
+         */
+        export interface ClusterIssuerSpecAcmeSolvers {
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+             */
+            dns01?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01>;
+            /**
+             * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+             */
+            http01?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01>;
+            /**
+             * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+             */
+            selector?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversSelector>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01 {
+            /**
+             * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+             */
+            acmeDNS?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AcmeDNS>;
+            /**
+             * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+             */
+            akamai?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Akamai>;
+            /**
+             * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+             */
+            azureDNS?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AzureDNS>;
+            /**
+             * Use the Google Cloud DNS API to manage DNS01 challenge records.
+             */
+            cloudDNS?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01CloudDNS>;
+            /**
+             * Use the Cloudflare API to manage DNS01 challenge records.
+             */
+            cloudflare?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Cloudflare>;
+            /**
+             * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+             */
+            cnameStrategy?: pulumi.Input<string>;
+            /**
+             * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+             */
+            digitalocean?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Digitalocean>;
+            /**
+             * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+             */
+            rfc2136?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Rfc2136>;
+            /**
+             * Use the AWS Route53 API to manage DNS01 challenge records.
+             */
+            route53?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Route53>;
+            /**
+             * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+             */
+            webhook?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Webhook>;
+        }
+
+        /**
+         * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmeDNS {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accountSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AcmeDNSAccountSecretRef>;
+            host: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AcmeDNSAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Akamai DNS zone management API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            accessTokenSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientSecretSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            clientTokenSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef>;
+            serviceConsumerDomain: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzureDNS {
+            /**
+             * if both this and ClientSecret are left unset MSI will be used
+             */
+            clientID?: pulumi.Input<string>;
+            /**
+             * if both this and ClientID are left unset MSI will be used
+             */
+            clientSecretSecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01AzureDNSClientSecretSecretRef>;
+            environment?: pulumi.Input<string>;
+            hostedZoneName?: pulumi.Input<string>;
+            resourceGroupName: pulumi.Input<string>;
+            subscriptionID: pulumi.Input<string>;
+            /**
+             * when specifying ClientID and ClientSecret then this field is also needed
+             */
+            tenantID?: pulumi.Input<string>;
+        }
+
+        /**
+         * if both this and ClientID are left unset MSI will be used
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01AzureDNSClientSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Google Cloud DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudDNS {
+            /**
+             * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+             */
+            hostedZoneName?: pulumi.Input<string>;
+            project: pulumi.Input<string>;
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            serviceAccountSecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01CloudDNSServiceAccountSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudDNSServiceAccountSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the Cloudflare API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
+            /**
+             * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+             */
+            apiKeySecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef>;
+            /**
+             * API token used to authenticate with Cloudflare.
+             */
+            apiTokenSecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef>;
+            /**
+             * Email of the account, only required when using API key based authentication.
+             */
+            email?: pulumi.Input<string>;
+        }
+
+        /**
+         * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * API token used to authenticate with Cloudflare.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the DigitalOcean DNS API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
+            /**
+             * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+             */
+            tokenSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef>;
+        }
+
+        /**
+         * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
+            /**
+             * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+             */
+            nameserver: pulumi.Input<string>;
+            /**
+             * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+             */
+            tsigAlgorithm?: pulumi.Input<string>;
+            /**
+             * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+             */
+            tsigKeyName?: pulumi.Input<string>;
+            /**
+             * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+             */
+            tsigSecretSecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef>;
+        }
+
+        /**
+         * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Use the AWS Route53 API to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
+            /**
+             * The AccessKeyID is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            accessKeyID?: pulumi.Input<string>;
+            /**
+             * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+             */
+            hostedZoneID?: pulumi.Input<string>;
+            /**
+             * Always set the region when using AccessKeyID and SecretAccessKey
+             */
+            region: pulumi.Input<string>;
+            /**
+             * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+             */
+            role?: pulumi.Input<string>;
+            /**
+             * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+             */
+            secretAccessKeySecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef>;
+        }
+
+        /**
+         * The SecretAccessKey is used for authentication. If not set we fall-back to using env vars, shared credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+         */
+        export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
+            /**
+             * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+             */
+            config?: pulumi.Input<{[key: string]: any}>;
+            /**
+             * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+             */
+            groupName: pulumi.Input<string>;
+            /**
+             * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+             */
+            solverName: pulumi.Input<string>;
+        }
+
+        /**
+         * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01 {
+            /**
+             * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+             */
+            ingress?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01Ingress>;
+        }
+
+        /**
+         * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
+            /**
+             * The ingress class to use when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of 'class' or 'name' may be specified.
+             */
+            class?: pulumi.Input<string>;
+            /**
+             * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+             */
+            ingressTemplate?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate>;
+            /**
+             * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources.
+             */
+            name?: pulumi.Input<string>;
+            /**
+             * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+             */
+            podTemplate?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate>;
+            /**
+             * Optional service type for Kubernetes solver service
+             */
+            serviceType?: pulumi.Input<string>;
+        }
+
+        /**
+         * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
+            /**
+             * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata>;
+        }
+
+        /**
+         * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata {
+            /**
+             * Annotations that should be added to the created ACME HTTP01 solver ingress.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver ingress.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
+            /**
+             * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+             */
+            metadata?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata>;
+            /**
+             * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+             */
+            spec?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec>;
+        }
+
+        /**
+         * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
+            /**
+             * Annotations that should be added to the create ACME HTTP01 solver pods.
+             */
+            annotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * Labels that should be added to the created ACME HTTP01 solver pods.
+             */
+            labels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * PodSpec defines overrides for the HTTP01 challenge solver pod. Only the 'priorityClassName', 'nodeSelector', 'affinity', 'serviceAccountName' and 'tolerations' fields are supported currently. All other fields will be ignored.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
+            /**
+             * If specified, the pod's scheduling constraints
+             */
+            affinity?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity>;
+            /**
+             * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+             */
+            nodeSelector?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+            /**
+             * If specified, the pod's priorityClassName.
+             */
+            priorityClassName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's service account
+             */
+            serviceAccountName?: pulumi.Input<string>;
+            /**
+             * If specified, the pod's tolerations.
+             */
+            tolerations?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations>[]>;
+        }
+
+        /**
+         * If specified, the pod's scheduling constraints
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity {
+            /**
+             * Describes node affinity scheduling rules for the pod.
+             */
+            nodeAffinity?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity>;
+            /**
+             * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAffinity?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity>;
+            /**
+             * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+             */
+            podAntiAffinity?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity>;
+        }
+
+        /**
+         * Describes node affinity scheduling rules for the pod.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution>;
+        }
+
+        /**
+         * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A node selector term, associated with the corresponding weight.
+             */
+            preference: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference>;
+            /**
+             * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * A node selector term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A list of node selector terms. The terms are ORed.
+             */
+            nodeSelectorTerms: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms>[]>;
+        }
+
+        /**
+         * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+            /**
+             * A list of node selector requirements by node's labels.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions>[]>;
+            /**
+             * A list of node selector requirements by node's fields.
+             */
+            matchFields?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+            /**
+             * The label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
+            /**
+             * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+             */
+            preferredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution>[]>;
+            /**
+             * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+             */
+            requiredDuringSchedulingIgnoredDuringExecution?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution>[]>;
+        }
+
+        /**
+         * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * Required. A pod affinity term, associated with the corresponding weight.
+             */
+            podAffinityTerm: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm>;
+            /**
+             * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+             */
+            weight: pulumi.Input<number>;
+        }
+
+        /**
+         * Required. A pod affinity term, associated with the corresponding weight.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+            /**
+             * A label query over a set of resources, in this case pods.
+             */
+            labelSelector?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector>;
+            /**
+             * namespaces specifies which namespaces the labelSelector applies to (matches against); null or empty list means "this pod's namespace"
+             */
+            namespaces?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+             */
+            topologyKey: pulumi.Input<string>;
+        }
+
+        /**
+         * A label query over a set of resources, in this case pods.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+            /**
+             * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+             */
+            matchExpressions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions>[]>;
+            /**
+             * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+            /**
+             * key is the label key that the selector applies to.
+             */
+            key: pulumi.Input<string>;
+            /**
+             * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+             */
+            operator: pulumi.Input<string>;
+            /**
+             * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+             */
+            values?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+         */
+        export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
+            /**
+             * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+             */
+            effect?: pulumi.Input<string>;
+            /**
+             * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+             */
+            operator?: pulumi.Input<string>;
+            /**
+             * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+             */
+            tolerationSeconds?: pulumi.Input<number>;
+            /**
+             * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+             */
+            value?: pulumi.Input<string>;
+        }
+
+        /**
+         * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+         */
+        export interface ClusterIssuerSpecAcmeSolversSelector {
+            /**
+             * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsNames?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+             */
+            dnsZones?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+             */
+            matchLabels?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+        }
+
+        /**
+         * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+         */
+        export interface ClusterIssuerSpecCa {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+            /**
+             * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+             */
+            secretName: pulumi.Input<string>;
+        }
+
+        /**
+         * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+         */
+        export interface ClusterIssuerSpecSelfSigned {
+            /**
+             * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+             */
+            crlDistributionPoints?: pulumi.Input<pulumi.Input<string>[]>;
+        }
+
+        /**
+         * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+         */
+        export interface ClusterIssuerSpecVault {
+            /**
+             * Auth configures how cert-manager authenticates with the Vault server.
+             */
+            auth: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuth>;
+            /**
+             * PEM encoded CA bundle used to validate Vault server certificate. Only used if the Server URL is using HTTPS protocol. This parameter is ignored for plain HTTP protocol connection. If not set the system root certificates are used to validate the TLS connection.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+             */
+            namespace?: pulumi.Input<string>;
+            /**
+             * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+             */
+            path: pulumi.Input<string>;
+            /**
+             * Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
+             */
+            server: pulumi.Input<string>;
+        }
+
+        /**
+         * Auth configures how cert-manager authenticates with the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuth {
+            /**
+             * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+             */
+            appRole?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuthAppRole>;
+            /**
+             * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+             */
+            kubernetes?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuthKubernetes>;
+            /**
+             * TokenSecretRef authenticates with Vault by presenting a token.
+             */
+            tokenSecretRef?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuthTokenSecretRef>;
+        }
+
+        /**
+         * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRole {
+            /**
+             * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+             */
+            path: pulumi.Input<string>;
+            /**
+             * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+             */
+            roleId: pulumi.Input<string>;
+            /**
+             * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuthAppRoleSecretRef>;
+        }
+
+        /**
+         * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+         */
+        export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetes {
+            /**
+             * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+             */
+            mountPath?: pulumi.Input<string>;
+            /**
+             * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+             */
+            role: pulumi.Input<string>;
+            /**
+             * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+             */
+            secretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVaultAuthKubernetesSecretRef>;
+        }
+
+        /**
+         * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+         */
+        export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TokenSecretRef authenticates with Vault by presenting a token.
+         */
+        export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+         */
+        export interface ClusterIssuerSpecVenafi {
+            /**
+             * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            cloud?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVenafiCloud>;
+            /**
+             * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+             */
+            tpp?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVenafiTpp>;
+            /**
+             * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+             */
+            zone: pulumi.Input<string>;
+        }
+
+        /**
+         * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiCloud {
+            /**
+             * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+             */
+            apiTokenSecretRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVenafiCloudApiTokenSecretRef>;
+            /**
+             * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+             */
+            url?: pulumi.Input<string>;
+        }
+
+        /**
+         * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+         */
+        export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
+            /**
+             * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+             */
+            key?: pulumi.Input<string>;
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+         */
+        export interface ClusterIssuerSpecVenafiTpp {
+            /**
+             * CABundle is a PEM encoded TLS certificate to use to verify connections to the TPP instance. If specified, system roots will not be used and the issuing CA for the TPP instance must be verifiable using the provided root. If not specified, the connection will be verified using the cert-manager system root certificates.
+             */
+            caBundle?: pulumi.Input<string>;
+            /**
+             * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+             */
+            credentialsRef: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerSpecVenafiTppCredentialsRef>;
+            /**
+             * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+             */
+            url: pulumi.Input<string>;
+        }
+
+        /**
+         * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+         */
+        export interface ClusterIssuerSpecVenafiTppCredentialsRef {
+            /**
+             * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+             */
+            name: pulumi.Input<string>;
+        }
+
+        /**
+         * Status of the ClusterIssuer. This is set and managed automatically.
+         */
+        export interface ClusterIssuerStatus {
+            /**
+             * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+             */
+            acme?: pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerStatusAcme>;
+            /**
+             * List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready`.
+             */
+            conditions?: pulumi.Input<pulumi.Input<inputs.certmanager.v1beta1.ClusterIssuerStatusConditions>[]>;
+        }
+
+        /**
+         * ACME specific status options. This field should only be set if the Issuer is configured to use an ACME server to issue certificates.
+         */
+        export interface ClusterIssuerStatusAcme {
+            /**
+             * LastRegisteredEmail is the email associated with the latest registered ACME account, in order to track changes made to registered account associated with the  Issuer
+             */
+            lastRegisteredEmail?: pulumi.Input<string>;
+            /**
+             * URI is the unique account identifier, which can also be used to retrieve account details from the CA
+             */
+            uri?: pulumi.Input<string>;
+        }
+
+        /**
+         * IssuerCondition contains condition information for an Issuer.
+         */
+        export interface ClusterIssuerStatusConditions {
+            /**
+             * LastTransitionTime is the timestamp corresponding to the last status change of this condition.
+             */
+            lastTransitionTime?: pulumi.Input<string>;
+            /**
+             * Message is a human readable description of the details of the last transition, complementing reason.
+             */
+            message?: pulumi.Input<string>;
+            /**
+             * Reason is a brief machine readable explanation for the condition's last transition.
+             */
+            reason?: pulumi.Input<string>;
+            /**
+             * Status of the condition, one of ('True', 'False', 'Unknown').
+             */
+            status: pulumi.Input<string>;
+            /**
+             * Type of the condition, known values are ('Ready').
              */
             type: pulumi.Input<string>;
         }

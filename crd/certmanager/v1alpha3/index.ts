@@ -3,4 +3,5 @@
 
 // Export members:
 export * from "./certificate";
+export * from "./clusterIssuer";
 export * from "./issuer";
