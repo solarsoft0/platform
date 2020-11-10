@@ -555,3 +555,62 @@ new k8s.helm.v3.Chart(
   },
   { provider: k8sProvider }
 );
+
+// -------- METABASE --------
+
+new K8SExec(
+  "metabase-user",
+  {
+    namespace: tsNs.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: k8sConfig,
+    cmd: [
+      "psql",
+      "-c",
+      `create user ${cf.require('metabase_db_username').toString()} with password '${cf.require("metabase_db_password").toString()}' SUPERUSER;`
+    ]
+  },
+  { dependsOn: tsChart }
+);
+
+const mbNs = new k8s.core.v1.Namespace(
+  "metabase",
+  { metadata: { "name": "metabase" } },
+  { provider: k8sProvider },
+);
+
+const mbCreds = new k8s.core.v1.Secret(
+  "mbCreds",
+  {
+    metadata: {
+      namespace: mbNs.metadata.name,
+      name: "metabase-creds"
+    },
+    stringData: {
+      uri: "timescale.timescale:5432/analytics",
+      username: cf.require("metabase_db_username"),
+      password: cf.require("metabase_db_password"),
+    },
+  },
+  { provider: k8sProvider }
+);
+
+new k8s.helm.v3.Chart(
+  "metabase",
+  {
+    namespace: mbNs.metadata.name,
+    chart: "metabase",
+    repo: "stable",
+    values: {
+      database: {
+        type: "PostgreSQL",
+        existingSecret: mbCreds.metadata.name,
+        existingSecretUsernameKey: "username",
+        existingSecretPasswordKey: "password",
+        existingSecretConnectionURIKey: "uri",
+      },
+    },
+  },
+  { provider: k8sProvider },
+);

@@ -7,6 +7,10 @@ config:
     secure: AAABAHdkIIk/Fjgn0eFklD863feRgle0afwapyS4vviiH5GjpQ+RjphzV6dA5rSkyshBzt0X3zd+jxfmKW3mini6QJtq0I2M
   dply:grafana-admin-pass:
     secure: AAABAMlvogn3Id/Bu6Bo4iZOcps7mc4nz20zCPNYwa21I2REpQkyjLF5Ukn94MXEmTOoWDxp0MixRflXyHTBww==
+  dply:metabase_db_password:
+    secure: AAABAP3INyA3fatNuZO2w71EXXiBxEapv6WFiVO11nK/9sSN7DGtj4aqegjCApypVRjaRpW3/BiRz6ml3z5PtQ==
+  dply:metabase_db_username:
+    secure: AAABAHGDR/4wXI2UbfGsT/lbaXQwnlkfXQUz8zNOpnk+MioksfbJdQ==
   dply:minio-access-key:
     secure: AAABAC7pL7HBdP3bLR8Q7PzXUaK/cN9KeC7pQ44QqZ0EAm6xlQA3/0gNZ7YJrv9+Jo3UJEoMmzoPB7Y=
   dply:minio-secret-key:
