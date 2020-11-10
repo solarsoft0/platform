@@ -7,6 +7,8 @@ config:
     secure: AAABAHdkIIk/Fjgn0eFklD863feRgle0afwapyS4vviiH5GjpQ+RjphzV6dA5rSkyshBzt0X3zd+jxfmKW3mini6QJtq0I2M
   dply:grafana-admin-pass:
     secure: AAABAMlvogn3Id/Bu6Bo4iZOcps7mc4nz20zCPNYwa21I2REpQkyjLF5Ukn94MXEmTOoWDxp0MixRflXyHTBww==
+  dply:grafana_postgres_password:
+    secure: AAABADgMpGrCdo0cNrSZum6CyUfA4E0LYSUWndtUvendqt5fv4RVUJn8+xwcG86Bj4cyxPTBn204rUJ5BpmIUsUNkt8=
   dply:metabase_db_password:
     secure: AAABAP3INyA3fatNuZO2w71EXXiBxEapv6WFiVO11nK/9sSN7DGtj4aqegjCApypVRjaRpW3/BiRz6ml3z5PtQ==
   dply:metabase_db_username:
