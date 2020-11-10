@@ -6,5 +6,7 @@ import './loki';
 import './metabase';
 import './minio';
 import './monitoring';
+import './prometheus';
 import './promscale';
+import './promtail';
 import './timescale';

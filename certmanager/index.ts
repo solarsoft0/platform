@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
+import * as crd from '../crd';
 
 const conf = new pulumi.Config("dply");
 
@@ -31,11 +32,36 @@ export const chart = new k8s.helm.v3.Chart(
   { provider, dependsOn: cfAPIKey }
 );
 
-export const letsEncryptCerts = new k8s.yaml.ConfigFile(
+export const letsEncryptCerts = new crd.certmanager.v1.ClusterIssuer(
   "letsencryptcerts",
-  { file: "issueracme.yaml" },
+  {
+    metadata: {
+      "name": "letsencrypt",
+      "namespace": namespace.metadata.name,
+    },
+    spec: {
+      acme: {
+        server: "https://acme-v02.api.letsencrypt.org/directory",
+        email: "support@m3o.com",
+        privateKeySecretRef: {
+          name: "letsencrypt"
+        },
+        solvers: [{
+          dns01: {
+            cloudflare: {
+              email: "ben@micro.mu",
+              apiTokenSecretRef: {
+                name: cfAPIKey.metadata.name,
+                key: "cloudflare",
+              },
+            },
+          },
+        }],
+      },
+    },
+  },
   { provider, dependsOn: chart }
-);
+)
 
 export const ca = new k8s.core.v1.Secret(
   "ca",
@@ -52,9 +78,19 @@ export const ca = new k8s.core.v1.Secret(
   { provider, dependsOn: chart }
 );
 
-export const caCerts = new k8s.yaml.ConfigFile(
+export const caCerts = new crd.certmanager.v1.ClusterIssuer(
   "cacerts",
-  { file: "issuercustomca.yaml" },
+  {
+    metadata: {
+      "name": "ca",
+      "namespace": namespace.metadata.name,
+    },
+    spec: {
+      ca: {
+        secretName: "ca",
+      },
+    },
+  },
   { provider, dependsOn: chart }
 );
 
