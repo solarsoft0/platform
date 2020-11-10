@@ -8,15 +8,15 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const tls = new crd.certmanager.v1.Certificate(
-  "cockroach-tls",
+export const tlsServer = new crd.certmanager.v1.Certificate(
+  "cockroach-tls-server",
   {
     metadata: {
-      name: "cockroach-tls",
+      name: "cockroach-tls-server",
       namespace: namespace.metadata.name
     },
     spec: {
-      secretName: "cockroach-tls",
+      secretName: "cockroach-tls-server",
       subject: {
         organizations: ["m3o"]
       },
@@ -25,9 +25,41 @@ export const tls = new crd.certmanager.v1.Certificate(
         algorithm: "ECDSA",
         size: 256
       },
+      commonName: "node",
       dnsNames: [
-        "*.cockroach.cockroach.svc.cluster.local",
-        "cockroach.cockroach.svc.cluster.local"
+        "*.cockroach-cockroachdb.cockroach.svc.cluster.local",
+        "*.cockroach-cockroachdb",
+        "cockroach-cockroachdb"
+      ],
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer"
+      }
+    }
+  },
+  { provider }
+);
+
+export const tlsPeer = new crd.certmanager.v1.Certificate(
+  "cockroach-tls-peer",
+  {
+    metadata: {
+      name: "cockroach-tls-peer",
+      namespace: namespace.metadata.name
+    },
+    spec: {
+      secretName: "cockroach-tls-peer",
+      subject: {
+        organizations: ["m3o"]
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256
+      },
+      commonName: "root",
+      dnsNames: [
+        "*.cockroach-cockroachdb.cockroach.svc.cluster.local"
       ],
       issuerRef: {
         name: "ca",
@@ -56,8 +88,9 @@ export const chart = new k8s.helm.v3.Chart(
         enabled: true,
         certs: {
           provided: true,
-          clientRootSecret: tls.spec.secretName,
-          nodeSecret: tls.spec.secretName
+          tlsSecret: true,
+          clientRootSecret: tlsPeer.spec.secretName,
+          nodeSecret: tlsServer.spec.secretName,
         }
       },
       storage: { persistentVolume: { storageClass: "ssd" } }
@@ -66,4 +99,4 @@ export const chart = new k8s.helm.v3.Chart(
   { provider }
 );
 
-export default [namespace, tls, chart];
+export default [namespace, tlsServer, chart];
