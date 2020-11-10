@@ -13,3 +13,4 @@ import "./timescale";
 import "./cockroach";
 import "./nats";
 import "./nginx";
+import "./tailscale";
