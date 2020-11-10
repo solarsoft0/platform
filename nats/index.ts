@@ -1,6 +1,7 @@
 import * as k8s from "@pulumi/kubernetes";
 import { provider } from "../cluster";
 import * as crd from "../crd";
+import { ObjectMeta } from "../crd/meta/v1";
 
 export const namespace = new k8s.core.v1.Namespace(
   "nats",
@@ -74,19 +75,20 @@ export const chart = new k8s.helm.v3.Chart(
   "nats",
   {
     namespace: namespace.metadata.name,
-    chart: "nats/nats",
-    fetchOpts: { repo: "https://nats-io.github.io/k8s/helm/charts/" },
+    chart: "nats",
+    fetchOpts: { repo: "https://charts.bitnami.com/bitnami" },
+    version: "4.5.8",
     values: {
       nats: {
         tls: {
-          secret: { name: serverTLS.metadata.name }
+          secret: { name: (serverTLS.metadata as ObjectMeta).name }
         }
       },
       cluster: {
         enabled: true,
         replicas: 3,
         tls: {
-          secret: { name: peerTLS.metadata.name }
+          secret: { name: (peerTLS.metadata as ObjectMeta).name }
         }
       },
       metrics: { enabled: true }
