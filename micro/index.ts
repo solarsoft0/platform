@@ -244,12 +244,13 @@ const server = [
 ]
 
 export const jwtCert = new crd.certmanager.v1.Certificate(
-  'auth-cert',
+  'jwt-creds',
   {
     metadata: {
       name: 'jwt-creds',
     },
     spec: {
+      duration: "10y",
       secretName: 'jwt-creds',
       subject: {
         organizations: ['m3o']
