@@ -58,6 +58,11 @@ export const tailscaleCreds = new k8s.core.v1.Secret(
   { provider }
 );
 
+new k8s.core.v1.PersistentVolumeClaim("tailscale-state", {
+  metadata: { name: "tailscale-nginx-ingress-state" },
+  spec: { resources: { requests: { storage: "1Gi" } } }
+});
+
 export const internalChart = new k8s.helm.v3.Chart(
   "nginx-internal",
   {
