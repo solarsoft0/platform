@@ -1,32 +1,23 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import * as gcp from "@pulumi/gcp";
-import { provider } from '../cluster';
-import { letsEncryptCerts } from "../certmanager";
-import { ObjectMeta } from "../crd/meta/v1";
-import { namespace } from "../monitoring"
-import grafana from "../grafana";
+import { provider } from "../cluster";
+// import { letsEncryptCerts } from "../certmanager";
+// import { ObjectMeta } from "../crd/meta/v1";
+// import { namespace } from "../monitoring";
+// import grafana from "../grafana";
 
 const conf = new pulumi.Config("gcp");
 
-// export const internalChart = new k8s.helm.v3.Chart(
-//   "nginx",
-//   {
-//     chart: "ingress-nginx",
-//     version: "3.9.0",
-//     fetchOpts: {
-//       repo: "https://kubernetes.github.io/ingress-nginx"
-//     },
-//   },
-//   { provider }
-// )
+export const namespace = new k8s.core.v1.Namespace(
+  "nginx",
+  { metadata: { name: "nginx" } },
+  { provider }
+);
 
-export const externalIP = new gcp.compute.Address(
-  "external-ip",
-  {
-    region: conf.require("region"),
-  },
-)
+export const externalIP = new gcp.compute.Address("nginx-external-ip", {
+  region: conf.require("region")
+});
 
 export const externalChart = new k8s.helm.v3.Chart(
   "nginx",
@@ -36,16 +27,20 @@ export const externalChart = new k8s.helm.v3.Chart(
     fetchOpts: {
       repo: "https://kubernetes.github.io/ingress-nginx"
     },
+    namespace: namespace.metadata.name,
     values: {
       controller: {
+        ingressClass: "external",
+        metrics: { enabled: true },
         service: {
-          loadBalancerIP: externalIP.address,
+          loadBalancerIP: externalIP.address
         },
-      },
-    },
+        admissionWebhooks: { enabled: false }
+      }
+    }
   },
-  { provider },
-)
+  { provider, dependsOn: externalIP }
+);
 
 // export const grpcIngress = new k8s.networking.v1beta1.Ingress(
 //   "grpc-ingress",
@@ -124,50 +119,50 @@ export const externalChart = new k8s.helm.v3.Chart(
 //   { provider, dependsOn: externalChart },
 // );
 
-const grafanaIngress = new k8s.networking.v1beta1.Ingress(
-  "grafana-ingress",
-  {
-    metadata: {
-      name: "grafana-ingress",
-      namespace: namespace.metadata.name,
-      annotations: {
-        "kubernetes.io/ingress.class": "nginx",
-        "cert-manager.io/issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-      },
-    },
-    spec: {
-      tls: [
-        {
-          hosts: ["grafana.m3o.sh"],
-        }
-      ],
-      rules: [
-        {
-          host: "grafana.m3o.sh",
-          http: {
-            paths: [
-              {
-                path: "/",
-                pathType: "prefix",
-                backend: {
-                  serviceName: "grafana",
-                  servicePort: 3000,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
-  },
-  { provider, dependsOn: externalChart },
-);
+// const grafanaIngress = new k8s.networking.v1beta1.Ingress(
+//   "grafana-ingress",
+//   {
+//     metadata: {
+//       name: "grafana-ingress",
+//       namespace: namespace.metadata.name,
+//       annotations: {
+//         "kubernetes.io/ingress.class": "nginx",
+//         "cert-manager.io/issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
+//       },
+//     },
+//     spec: {
+//       tls: [
+//         {
+//           hosts: ["grafana.m3o.sh"],
+//         }
+//       ],
+//       rules: [
+//         {
+//           host: "grafana.m3o.sh",
+//           http: {
+//             paths: [
+//               {
+//                 path: "/",
+//                 pathType: "prefix",
+//                 backend: {
+//                   serviceName: "grafana",
+//                   servicePort: 3000,
+//                 },
+//               },
+//             ],
+//           },
+//         },
+//       ],
+//     },
+//   },
+//   { provider, dependsOn: externalChart },
+// );
 
 export default [
   // internalChart,
   externalChart,
-  externalIP,
-  grafanaIngress,
+  externalIP
+  // grafanaIngress,
   // grpcIngress,
   // httpIngress,
-]
+];

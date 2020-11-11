@@ -1,8 +1,8 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
-import * as k8s from "@pulumi/kubernetes";  
-import { provider } from '../cluster';
-import * as crd from '../crd';
+import * as k8s from "@pulumi/kubernetes";
+import { provider } from "../cluster";
+import * as crd from "../crd";
 
 const cf = new pulumi.Config("dply");
 const gcpConf = new pulumi.Config("gcp");
@@ -18,27 +18,24 @@ export const tls = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "timescale-tls",
-      namespace: namespace.metadata.name,
+      namespace: namespace.metadata.name
     },
     spec: {
       secretName: "timescale-tls",
       subject: {
-        organizations: ["m3o"],
+        organizations: ["m3o"]
       },
       isCA: false,
       privateKey: {
         algorithm: "ECDSA",
-        size: 256,
+        size: 256
       },
-      dnsNames: [
-        "timescale.timescale.svc.cluster.local",
-        "timescale",
-      ],
+      dnsNames: ["timescale.timescale.svc.cluster.local", "timescale"],
       issuerRef: {
         name: "ca",
-        kind: "ClusterIssuer",
-      },
-    },
+        kind: "ClusterIssuer"
+      }
+    }
   },
   { provider }
 );
@@ -89,7 +86,7 @@ export const chart = new k8s.helm.v3.Chart(
       image: { tag: "pg12.4-ts1.7.4-p1" },
       replicaCount: 2,
       loadBalancer: {
-        enabled: true
+        enabled: false
       },
       prometheus: { enabled: false },
       rbac: {
@@ -97,7 +94,7 @@ export const chart = new k8s.helm.v3.Chart(
       },
       secretNames: {
         credentials: creds.metadata.name,
-        certificate: tls.spec.secretName,
+        certificate: tls.spec.secretName
       },
       backup: {
         enabled: true,
@@ -106,6 +103,15 @@ export const chart = new k8s.helm.v3.Chart(
           "repo1-s3-endpoint": "minio.minio",
           "repo1-s3-host": "minio.minio",
           "repo1-s3-verify-tls": "n"
+        },
+        "pgBackRest:archive-push": {
+          "process-max": 4,
+          "archive-async": "y"
+        },
+        "pgBackRest:archive-get": {
+          "process-max": 4,
+          "archive-async": "y",
+          "archive-get-queue-max": "2GB"
         },
         envFrom: [
           {
@@ -126,17 +132,35 @@ export const chart = new k8s.helm.v3.Chart(
           size: "10Gi",
           storageClass: "ssd"
         }
+      },
+      patroni: {
+        postgresql: { parameters: { max_wal_size: "8GB" } },
+        bootstrap: {
+          method: "restore_or_initdb",
+          restore_or_initdb: {
+            command: `
+/etc/timescaledb/scripts/restore_or_initdb.sh
+        --encoding=UTF8
+        --locale=C.UTF-8
+        --wal-segsize=256`
+          }
+        },
+        dcs: {
+          synchronous_mode: true,
+          master_start_timeout: 0,
+          postgresql: {
+            use_slots: false,
+            parameters: {
+              checkpoint_timeout: "300s",
+              temp_file_limit: "10GB",
+              synchronous_commit: "remote_apply"
+            }
+          }
+        }
       }
     }
   },
   { provider }
 );
 
-export default [
-  namespace,
-  tls,
-  bucket,
-  creds,
-  pgBackrest,
-  chart,
-]
+export default [namespace, tls, bucket, creds, pgBackrest, chart];
