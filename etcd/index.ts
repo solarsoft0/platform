@@ -9,7 +9,7 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const cert = new crd.certmanager.v1.Certificate(
+export const serverTLS = new crd.certmanager.v1.Certificate(
   "etcdcerts",
   {
     metadata: {
@@ -26,11 +26,38 @@ export const cert = new crd.certmanager.v1.Certificate(
         algorithm: "ECDSA",
         size: 256,
       },
+      commonName: "etcd",
       dnsNames: [
         "etcd.etcd.svc.cluster.local",
          "*.etcd-headless.etcd.svc.cluster.local",
          "etcd",
       ],
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer",
+      },
+    },
+  },
+  { provider, dependsOn: certmanager }
+)
+
+export const clientTLS = new crd.certmanager.v1.Certificate(
+  "etcd-client-cert",
+  {
+    metadata: {
+      name: "etcd",
+    },
+    spec: {
+      secretName: "etcd-tls",
+      subject: {
+        organizations: ["m3o"],
+      },
+      isCA: false,
+      commonName: "etcd",
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256,
+      },
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer",
@@ -57,7 +84,7 @@ export const chart = new k8s.helm.v3.Chart(
         client: {
           secureTransport: true,
           enableAuthentication: true,
-          existingSecret: cert.spec.secretName,
+          existingSecret: serverTLS.spec.secretName,
           certFilename: "tls.crt",
           certKeyFilename: "tls.key",
           caFilename: "ca.crt"
@@ -65,7 +92,7 @@ export const chart = new k8s.helm.v3.Chart(
         peer: {
           secureTransport: true,
           enableAuthentication: true,
-          existingSecret: cert.spec.secretName,
+          existingSecret: serverTLS.spec.secretName,
           certFilename: "tls.crt",
           certKeyFilename: "tls.key",
           caFilename: "ca.crt"
@@ -78,6 +105,7 @@ export const chart = new k8s.helm.v3.Chart(
 
 export default [
   namespace,
-  cert,
+  serverTLS,
+  clientTLS,
   chart,
 ]

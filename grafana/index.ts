@@ -4,6 +4,9 @@ import { K8SExec } from '../exec';
 import { namespace } from '../monitoring';
 import { provider, kubeconfig } from '../cluster';
 import timescale, { namespace as tsNamespace } from '../timescale';
+import { letsEncryptCerts } from "../certmanager";
+import { ObjectMeta } from "../crd/meta/v1";
+import { externalChart as externalIngress } from "../nginx";
 
 const cf = new pulumi.Config("dply");
 
@@ -92,10 +95,51 @@ export const chart = new k8s.helm.v3.Chart(
   { provider, dependsOn: [...timescale, dbAccess] }
 );
 
+export const ingress = new k8s.networking.v1beta1.Ingress(
+  "grafana-ingress",
+  {
+    metadata: {
+      name: "grafana",
+      namespace: namespace.metadata.name,
+      annotations: {
+        "kubernetes.io/ingress.class": "internal",
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
+      },
+    },
+    spec: {
+      tls: [
+        {
+          hosts: ["*.m3o.sh"],
+          secretName: "wildcard-tls",
+        }
+      ],
+      rules: [
+        {
+          host: "grafana.m3o.sh",
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "prefix",
+                backend: {
+                  serviceName: "grafana",
+                  servicePort: 3000,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+  { provider, dependsOn: externalIngress },
+);
+
 export default [
   database,
   dbUser,
   dbAccess,
   creds,
   chart,
+  ingress,
 ]
