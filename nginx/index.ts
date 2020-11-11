@@ -2,12 +2,14 @@ import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import * as gcp from "@pulumi/gcp";
 import { provider } from "../cluster";
+import { tailscaleImage } from "../tailscale";
 // import { letsEncryptCerts } from "../certmanager";
 // import { ObjectMeta } from "../crd/meta/v1";
 // import { namespace } from "../monitoring";
 // import grafana from "../grafana";
 
 const conf = new pulumi.Config("gcp");
+const cf = new pulumi.Config("dply");
 
 export const namespace = new k8s.core.v1.Namespace(
   "nginx",
@@ -36,6 +38,84 @@ export const externalChart = new k8s.helm.v3.Chart(
           loadBalancerIP: externalIP.address
         },
         admissionWebhooks: { enabled: false }
+      }
+    }
+  },
+  { provider, dependsOn: externalIP }
+);
+
+export const tailscaleCreds = new k8s.core.v1.Secret(
+  "tailscale",
+  {
+    metadata: {
+      namespace: namespace.metadata.name,
+      name: "tailscale"
+    },
+    stringData: {
+      auth_key: cf.require("tailscale_access_key")
+    }
+  },
+  { provider }
+);
+
+export const internalChart = new k8s.helm.v3.Chart(
+  "nginx-internal",
+  {
+    chart: "ingress-nginx",
+    version: "3.9.0",
+    fetchOpts: {
+      repo: "https://kubernetes.github.io/ingress-nginx"
+    },
+    namespace: namespace.metadata.name,
+    values: {
+      controller: {
+        ingressClass: "internal",
+        metrics: { enabled: true },
+        service: {
+          type: "ClusterIP"
+        },
+        admissionWebhooks: { enabled: false },
+        extraVolumes: [
+          {
+            name: "tailscale-state",
+            persistentVolumeClaim: {
+              claimName: "tailscale-nginx-ingress-state"
+            }
+          }
+        ],
+        extraContainers: [
+          {
+            name: "nginx-ingress-tailscaled",
+            image: tailscaleImage.imageName,
+            imagePullPolicy: "Always",
+            volumeMounts: [
+              {
+                name: "tailscale-state",
+                mountPath: "/tailscale"
+              }
+            ],
+            env: [
+              {
+                name: "TAILSCALE_AUTH",
+                valueFrom: {
+                  secretKeyRef: {
+                    name: "tailscale",
+                    key: "auth_key"
+                  }
+                }
+              },
+              {
+                name: "TAILSCALE_TAGS",
+                value: "tag:dev"
+              }
+            ],
+            securityContext: {
+              capabilities: {
+                add: ["NET_ADMIN"]
+              }
+            }
+          }
+        ]
       }
     }
   },

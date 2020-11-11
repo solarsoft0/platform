@@ -40,7 +40,7 @@ export const tls = new crd.certmanager.v1.Certificate(
   { provider }
 );
 
-export const bucket = new gcp.storage.Bucket("timescalebackups", {
+export const bucket = new gcp.storage.Bucket("timescale-backups", {
   location: gcpConf.require("region")
 });
 
@@ -88,7 +88,7 @@ export const chart = new k8s.helm.v3.Chart(
       loadBalancer: {
         enabled: false
       },
-      prometheus: { enabled: false },
+      prometheus: { enabled: true },
       rbac: {
         enabled: true
       },
@@ -97,21 +97,12 @@ export const chart = new k8s.helm.v3.Chart(
         certificate: tls.spec.secretName
       },
       backup: {
-        enabled: true,
+        enabled: false,
         pgBackRest: {
           "repo1-path": pulumi.interpolate`/${bucket.name}`,
           "repo1-s3-endpoint": "minio.minio",
           "repo1-s3-host": "minio.minio",
           "repo1-s3-verify-tls": "n"
-        },
-        "pgBackRest:archive-push": {
-          "process-max": 4,
-          "archive-async": "y"
-        },
-        "pgBackRest:archive-get": {
-          "process-max": 4,
-          "archive-async": "y",
-          "archive-get-queue-max": "2GB"
         },
         envFrom: [
           {
@@ -124,43 +115,21 @@ export const chart = new k8s.helm.v3.Chart(
       persistentVolumes: {
         data: {
           enabled: true,
-          size: "50Gi",
+          size: "40Gi",
           storageClass: "ssd"
         },
         wal: {
           enabled: true,
-          size: "10Gi",
+          size: "5Gi",
           storageClass: "ssd"
         }
       },
       patroni: {
-        postgresql: { parameters: { max_wal_size: "8GB" } },
-        bootstrap: {
-          method: "restore_or_initdb",
-          restore_or_initdb: {
-            command: `
-/etc/timescaledb/scripts/restore_or_initdb.sh
-        --encoding=UTF8
-        --locale=C.UTF-8
-        --wal-segsize=256`
-          }
-        },
-        dcs: {
-          synchronous_mode: true,
-          master_start_timeout: 0,
-          postgresql: {
-            use_slots: false,
-            parameters: {
-              checkpoint_timeout: "300s",
-              temp_file_limit: "10GB",
-              synchronous_commit: "remote_apply"
-            }
-          }
-        }
+        postgresql: { parameters: { max_wal_size: "4GB" } }
       }
     }
   },
   { provider }
 );
 
-export default [namespace, tls, bucket, creds, pgBackrest, chart];
+export default [namespace, tls, bucket, creds, pgBackrest];

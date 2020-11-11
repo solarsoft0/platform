@@ -6,7 +6,7 @@ const registry = new gcp.container.Registry("gcp_ts_registry", {
   location: "EU"
 });
 
-const tailscaleImage = new docker.Image(
+export const tailscaleImage = new docker.Image(
   "tailscale",
   {
     imageName: pulumi.interpolate`eu.gcr.io/${gcp.config.project}/tailscale:latest`,
