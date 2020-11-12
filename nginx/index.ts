@@ -3,6 +3,9 @@ import * as k8s from "@pulumi/kubernetes";
 import * as gcp from "@pulumi/gcp";
 import { provider } from "../cluster";
 import { tailscaleImage } from "../tailscale";
+import { letsEncryptCerts } from "../certmanager";
+import { ObjectMeta } from "../crd/meta/v1";
+import { proxyService, apiService } from "../micro";
 
 const conf = new pulumi.Config("gcp");
 const cf = new pulumi.Config("dply");
@@ -86,6 +89,9 @@ export const internalChart = new k8s.helm.v3.Chart(
     namespace: namespace.metadata.name,
     values: {
       controller: {
+        updateStrategy: {
+          type: "Recreate",
+        },
         ingressClass: "internal",
         metrics: { enabled: true },
         service: {
@@ -97,8 +103,8 @@ export const internalChart = new k8s.helm.v3.Chart(
             name: "tailscale-state",
             persistentVolumeClaim: {
               claimName: "tailscale-nginx-ingress-state"
-            }
-          }
+            },
+          },
         ],
         extraContainers: [
           {
@@ -139,88 +145,90 @@ export const internalChart = new k8s.helm.v3.Chart(
   { provider, dependsOn: [externalIP, pvc] }
 );
 
-// export const grpcIngress = new k8s.networking.v1beta1.Ingress(
-//   "grpc-ingress",
-//   {
-//     metadata: {
-//       name: "grpc-ingress",
-//       annotations: {
-//         "kubernetes.io/ingress.class": "nginx",
-//         "nginx.ingress.kubernetes.io/backend-protocol": "GRPC",
-//         "cert-manager.io/issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-//       },
-//     },
-//     spec: {
-//       tls: [
-//         {
-//           hosts: ["*.m3o.sh"],
-//         }
-//       ],
-//       rules: [
-//         {
-//           host: "proxy.m3o.sh",
-//           http: {
-//             paths: [
-//               {
-//                 path: "/",
-//                 pathType: "prefix",
-//                 backend: {
-//                   serviceName: "micro-proxy",
-//                   servicePort: 8081,
-//                 },
-//               },
-//             ],
-//           },
-//         },
-//       ],
-//     },
-//   },
-//   { provider, dependsOn: externalChart },
-// );
+export const grpcIngress = new k8s.networking.v1beta1.Ingress(
+  "grpc-ingress",
+  {
+    metadata: {
+      name: "grpc-ingress",
+      annotations: {
+        "kubernetes.io/ingress.class": "external",
+        "nginx.ingress.kubernetes.io/backend-protocol": "GRPC",
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
+      },
+    },
+    spec: {
+      tls: [
+        {
+          hosts: ["*.m3o.sh"],
+          secretName: "wildcard-tls",
+        }
+      ],
+      rules: [
+        {
+          host: "proxy.m3o.sh",
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "prefix",
+                backend: {
+                  serviceName: "micro-proxy",
+                  servicePort: 8081,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+  { provider, dependsOn: [externalChart, proxyService] },
+);
 
-// export const httpIngress = new k8s.networking.v1beta1.Ingress(
-//   "http-ingress",
-//   {
-//     metadata: {
-//       name: "http-ingress",
-//       annotations: {
-//         "kubernetes.io/ingress.class": "nginx",
-//         "cert-manager.io/issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-//       },
-//     },
-//     spec: {
-//       tls: [
-//         {
-//           hosts: ["*.m3o.sh"],
-//         }
-//       ],
-//       rules: [
-//         {
-//           host: "*.m3o.sh",
-//           http: {
-//             paths: [
-//               {
-//                 path: "/",
-//                 pathType: "prefix",
-//                 backend: {
-//                   serviceName: "micro-api",
-//                   servicePort: 8080,
-//                 },
-//               },
-//             ],
-//           },
-//         },
-//       ],
-//     },
-//   },
-//   { provider, dependsOn: externalChart },
-// );
+export const httpIngress = new k8s.networking.v1beta1.Ingress(
+  "http-ingress",
+  {
+    metadata: {
+      name: "http-ingress",
+      annotations: {
+        "kubernetes.io/ingress.class": "external",
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
+      },
+    },
+    spec: {
+      tls: [
+        {
+          hosts: ["*.m3o.sh"],
+          secretName: "wildcard-tls",
+        }
+      ],
+      rules: [
+        {
+          host: "*.m3o.sh",
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "prefix",
+                backend: {
+                  serviceName: "micro-api",
+                  servicePort: 8080,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+  { provider, dependsOn: [externalChart, apiService] },
+);
 
 export default [
   internalChart,
   externalChart,
   externalIP,
   pvc,
-  // grpcIngress,
-  // httpIngress,
+  grpcIngress,
+  httpIngress,
 ];

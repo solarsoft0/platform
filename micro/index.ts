@@ -5,6 +5,7 @@ import * as cockroach from '../cockroach';
 import * as crd from '../crd';
 import { provider } from '../cluster';
 import { ObjectMeta } from '../crd/meta/v1';
+import { Output } from '@pulumi/pulumi';
 
 const image = 'bentoogood/micro:pulumi';
 const imagePullPolicy = 'Always';
@@ -37,6 +38,144 @@ export const jwtCert = new crd.certmanager.v1.Certificate(
   { provider }
 )
 
+export const runtimeServiceAccount = new k8s.core.v1.ServiceAccount(
+  "runtime-service-account",
+  {
+    metadata: {
+      name: "micro-runtime",
+    },
+  },
+  { provider },
+);
+
+export const runtimeRole = new k8s.rbac.v1.ClusterRole(
+  "runtime-role",
+  {
+    "metadata": {
+      "name": "micro-runtime"
+    },
+    "rules": [
+      {
+        "apiGroups": [
+          ""
+        ],
+        "resources": [
+          "pods",
+          "pods/log",
+          "services",
+          "secrets",
+          "namespaces",
+          "resourcequotas"
+        ],
+        "verbs": [
+          "get",
+          "create",
+          "update",
+          "delete",
+          "deletecollection",
+          "list",
+          "patch",
+          "watch"
+        ]
+      },
+      {
+        "apiGroups": [
+          "apps"
+        ],
+        "resources": [
+          "deployments"
+        ],
+        "verbs": [
+          "create",
+          "update",
+          "delete",
+          "list",
+          "patch",
+          "watch"
+        ]
+      },
+      {
+        "apiGroups": [
+          ""
+        ],
+        "resources": [
+          "secrets",
+          "pods",
+          "pods/logs"
+        ],
+        "verbs": [
+          "get",
+          "watch",
+          "list"
+        ]
+      },
+      {
+        "apiGroups": [
+          "networking.k8s.io"
+        ],
+        "resources": [
+          "networkpolicy",
+          "networkpolicies"
+        ],
+        "verbs": [
+          "get",
+          "create",
+          "update",
+          "delete",
+          "deletecollection",
+          "list",
+          "patch",
+          "watch"
+        ]
+      }
+    ]
+  },
+  { provider }
+);
+
+export const runtimeClusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
+  "runtime-cluster-role-binding",
+  {
+    "metadata": {
+      "name": "micro-runtime"
+    },
+    "subjects": [
+      {
+        "kind": "ServiceAccount",
+        "name": runtimeServiceAccount.metadata.name,
+        "namespace": "default"
+      }
+    ],
+    "roleRef": {
+      "kind": "ClusterRole",
+      "name": runtimeRole.metadata.name,
+      "apiGroup": "rbac.authorization.k8s.io"
+    }
+  },
+  { provider },
+);
+
+export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
+  "runtime-role-binding",
+  {
+    "metadata": {
+      "name": "micro-runtime"
+    },
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": runtimeRole.metadata.name,
+    },
+    "subjects": [
+      {
+        "kind": "ServiceAccount",
+        "name": runtimeServiceAccount.metadata.name,
+      }
+    ]  
+  },
+  { provider },
+)
+
 function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
   let proxy: string = '';
   let dependsOn: any[] = [...cockroach.default, ...etcd.default, ...nats.default];
@@ -45,6 +184,13 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
     // use the network as the proxy 
     proxy = `${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`;
     dependsOn.push(networkService);
+  }
+
+  let serviceAccount: Output<string> | string = 'default';
+  if(srv === 'runtime') {
+    serviceAccount = runtimeServiceAccount.metadata.name;
+    dependsOn.push(runtimeClusterRoleBinding);
+    dependsOn.push(runtimeRoleBinding);
   }
 
   return new k8s.apps.v1.Deployment(
@@ -81,6 +227,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
             },
           },
           spec: {
+            serviceAccount,
             containers: [
               {
                 name: 'micro',
