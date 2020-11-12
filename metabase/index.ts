@@ -1,9 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as k8s from "@pulumi/kubernetes";  
+import * as k8s from "@pulumi/kubernetes";
 import { K8SExec } from "../exec";
-import timescale, { namespace as tsNamespace } from '../timescale';
+import timescale, { namespace as tsNamespace } from "../timescale";
 import { provider, kubeconfig } from "../cluster";
-import { namespace } from '../monitoring';
+import { namespace } from "../monitoring";
+import { letsEncryptCerts } from "../certmanager";
+import { ObjectMeta } from "../crd/meta/v1";
+import { internalChart } from "../nginx";
 
 const cf = new pulumi.Config("dply");
 
@@ -17,7 +20,9 @@ export const dbUser = new K8SExec(
     cmd: [
       "psql",
       "-c",
-      `create user metabase with password '${cf.require("metabase_db_password").toString()}';`
+      `create user metabase with password '${cf
+        .require("metabase_db_password")
+        .toString()}';`
     ]
   },
   { dependsOn: timescale }
@@ -51,7 +56,6 @@ export const database = new K8SExec(
   { dependsOn: timescale }
 );
 
-
 export const dbAccess = new K8SExec(
   "metabase-grant",
   {
@@ -59,11 +63,7 @@ export const dbAccess = new K8SExec(
     podSelector: "role=master",
     container: "timescaledb",
     kubeConfig: kubeconfig,
-    cmd: [
-      "psql",
-      "-c",
-      `GRANT ALL PRIVILEGES ON DATABASE metabase TO metabase`
-    ]
+    cmd: ["psql", "-c", `GRANT ALL PRIVILEGES ON DATABASE metabase TO metabase`]
   },
   { dependsOn: [...timescale, dbUser] }
 );
@@ -76,8 +76,10 @@ const mbCreds = new k8s.core.v1.Secret(
       name: "metabase-creds"
     },
     stringData: {
-      uri: `postgres://metabase:${cf.require("metabase_db_password").toString()}@timescale.timescale:5432/metabase?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory`,
-    },
+      uri: `postgres://metabase:${cf
+        .require("metabase_db_password")
+        .toString()}@timescale.timescale:5432/metabase?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory`
+    }
   },
   { provider }
 );
@@ -92,17 +94,52 @@ export const chart = new k8s.helm.v3.Chart(
       database: {
         type: "PostgreSQL",
         existingSecret: mbCreds.metadata.name,
-        existingSecretConnectionURIKey: "uri",
-      },
-    },
+        existingSecretConnectionURIKey: "uri"
+      }
+    }
   },
-  { provider, dependsOn: [dbAccessAnalytics, dbAccess] },
+  { provider, dependsOn: [dbAccessAnalytics, dbAccess] }
 );
 
-export default [
-  dbUser,
-  dbAccessAnalytics,
-  database,
-  dbAccess,
-  chart,
-]
+export const ingress = new k8s.networking.v1beta1.Ingress(
+  "metabase-ingress",
+  {
+    metadata: {
+      name: "metabase",
+      namespace: namespace.metadata.name,
+      annotations: {
+        "kubernetes.io/ingress.class": "internal",
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta)
+          .name!
+      }
+    },
+    spec: {
+      tls: [
+        {
+          hosts: ["*.m3o.sh"],
+          secretName: "wildcard-tls"
+        }
+      ],
+      rules: [
+        {
+          host: "data.m3o.sh",
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "prefix",
+                backend: {
+                  serviceName: "metabase",
+                  servicePort: 80
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  { provider, dependsOn: internalChart }
+);
+
+export default [dbUser, dbAccessAnalytics, database, dbAccess, chart, ingress];
