@@ -1,12 +1,12 @@
-import * as k8s from '@pulumi/kubernetes';
-import * as pulumi from '@pulumi/pulumi';
-import { K8SExec } from '../exec';
-import { namespace } from '../monitoring';
-import { provider, kubeconfig } from '../cluster';
-import timescale, { namespace as tsNamespace } from '../timescale';
+import * as k8s from "@pulumi/kubernetes";
+import * as pulumi from "@pulumi/pulumi";
+import { K8SExec } from "../exec";
+import { namespace } from "../monitoring";
+import { provider, kubeconfig } from "../cluster";
+import timescale, { namespace as tsNamespace } from "../timescale";
 import { letsEncryptCerts } from "../certmanager";
 import { ObjectMeta } from "../crd/meta/v1";
-import { externalChart as externalIngress } from "../nginx";
+import { internalChart } from "../nginx";
 
 const cf = new pulumi.Config("dply");
 
@@ -47,14 +47,10 @@ export const dbAccess = new K8SExec(
     podSelector: "role=master",
     container: "timescaledb",
     kubeConfig: kubeconfig,
-    cmd: [
-      "psql",
-      "-c",
-      `GRANT ALL PRIVILEGES ON DATABASE grafana TO grafana`
-    ]
+    cmd: ["psql", "-c", `GRANT ALL PRIVILEGES ON DATABASE grafana TO grafana`]
   },
   { dependsOn: [...timescale, dbUser, database] }
-)
+);
 
 export const creds = new k8s.core.v1.Secret(
   "grafana-credentials",
@@ -87,9 +83,22 @@ export const chart = new k8s.helm.v3.Chart(
       adminPassword: cf.require("grafana-admin-pass"),
       sidecar: {
         datasources: {
-          enabled: true,
-        },
+          enabled: true
+        }
       },
+      "grafana.ini": {
+        server: { root_url: "https://grafana.m3o.sh/" },
+        "auth.google": {
+          enabled: true,
+          client_id: cf.require("google_oauth_client_id"),
+          client_secret: cf.require("google_oauth_secret_id"),
+          scopes:
+            "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+          auth_url: "https://accounts.google.com/o/oauth2/auth",
+          token_url: "https://accounts.google.com/o/oauth2/token",
+          allow_sign_up: true
+        }
+      }
     }
   },
   { provider, dependsOn: [...timescale, dbAccess] }
@@ -103,14 +112,15 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
       namespace: namespace.metadata.name,
       annotations: {
         "kubernetes.io/ingress.class": "internal",
-        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-      },
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta)
+          .name!
+      }
     },
     spec: {
       tls: [
         {
           hosts: ["*.m3o.sh"],
-          secretName: "wildcard-tls",
+          secretName: "wildcard-tls"
         }
       ],
       rules: [
@@ -123,23 +133,16 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
                 pathType: "prefix",
                 backend: {
                   serviceName: "grafana",
-                  servicePort: 3000,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
+                  servicePort: 3000
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
   },
-  { provider, dependsOn: externalIngress },
+  { provider, dependsOn: internalChart }
 );
 
-export default [
-  database,
-  dbUser,
-  dbAccess,
-  creds,
-  chart,
-  ingress,
-]
+export default [database, dbUser, dbAccess, creds, chart, ingress];

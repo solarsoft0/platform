@@ -14,4 +14,4 @@ import "./cockroach";
 import "./nats";
 import "./nginx";
 import "./tailscale";
-import "./micro";
+// import "./micro";

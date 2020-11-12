@@ -80,7 +80,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "nats-client-tls",
-      namespace: namespace.metadata.name,
+      namespace: namespace.metadata.name
     },
     spec: {
       secretName: "nats-client-tls",
@@ -115,8 +115,8 @@ export const chart = new k8s.helm.v3.Chart(
           secret: { name: (serverTLS.metadata as ObjectMeta).name },
           ca: "ca.crt",
           cert: "tls.crt",
-          key: "tls.key",
-        },
+          key: "tls.key"
+        }
       },
       cluster: {
         enabled: true,
@@ -145,7 +145,7 @@ export const streamingChart = new k8s.helm.v3.Chart(
       stan: {
         replicas: 3,
         nats: {
-          url: "nats://nats:4222",
+          url: "nats://nats:4222"
         },
         tls: {
           enabled: true,
@@ -153,9 +153,9 @@ export const streamingChart = new k8s.helm.v3.Chart(
           settings: {
             client_cert: "/etc/nats/certs/tls.crt",
             client_key: "/etc/nats/certs/tls.key",
-            client_ca: "/etc/nats/certs/ca.crt",
-          },
-        },
+            client_ca: "/etc/nats/certs/ca.crt"
+          }
+        }
       },
       store: {
         type: "file",
@@ -163,19 +163,26 @@ export const streamingChart = new k8s.helm.v3.Chart(
           enabled: true,
           mount: "/data/stan",
           storageSize: "3Gi",
-          accessModes: "ReadWriteOnce",
+          accessModes: "ReadWriteOnce"
         },
         file: {
-          path: "/data/stan/store",
+          path: "/data/stan/store"
         },
         cluster: {
           enabled: true,
-          logPath: "/data/stan/log",
-        },
-      },
-    },
+          logPath: "/data/stan/log"
+        }
+      }
+    }
   },
   { provider, dependsOn: chart }
 );
 
-export default [namespace, peerTLS, serverTLS, clientTLS, chart, streamingChart];
+export default [
+  namespace,
+  peerTLS,
+  serverTLS,
+  clientTLS,
+  chart,
+  streamingChart
+];
