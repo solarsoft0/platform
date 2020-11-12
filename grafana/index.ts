@@ -1,13 +1,14 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
 import { K8SExec } from "../exec";
 import { namespace } from "../monitoring";
 import { provider, kubeconfig } from "../cluster";
 import timescale, { namespace as tsNamespace } from "../timescale";
+import { letsEncryptCerts } from "../certmanager";
+import { ObjectMeta } from "../crd/meta/v1";
+import { internalChart } from "../nginx";
 
 const cf = new pulumi.Config("dply");
-const c = new pulumi.Config("gcp");
 
 export const database = new K8SExec(
   "grafana-db",
@@ -70,18 +71,6 @@ export const creds = new k8s.core.v1.Secret(
   { provider }
 );
 
-const brand = new gcp.iap.Brand("M3O", {
-  applicationTitle: "M3O",
-  supportEmail: "support@m3o.com"
-});
-
-const oauthClient = new gcp.iap.Client("grafana-oauth", {
-  brand: pulumi.interpolate`projects/${c.require("gcp:project")}/brands/${
-    brand.id
-  }`,
-  displayName: "M3O"
-});
-
 export const chart = new k8s.helm.v3.Chart(
   "grafana",
   {
@@ -98,10 +87,11 @@ export const chart = new k8s.helm.v3.Chart(
         }
       },
       "grafana.ini": {
+        server: { root_url: "https://grafana.m3o.sh/" },
         "auth.google": {
           enabled: true,
-          client_id: oauthClient.clientId,
-          client_secret: oauthClient.secret,
+          client_id: cf.require("google_oauth_client_id"),
+          client_secret: cf.require("google_oauth_secret_id"),
           scopes:
             "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
           auth_url: "https://accounts.google.com/o/oauth2/auth",
@@ -114,4 +104,45 @@ export const chart = new k8s.helm.v3.Chart(
   { provider, dependsOn: [...timescale, dbAccess] }
 );
 
-export default [database, dbUser, dbAccess, creds, chart];
+export const ingress = new k8s.networking.v1beta1.Ingress(
+  "grafana-ingress",
+  {
+    metadata: {
+      name: "grafana",
+      namespace: namespace.metadata.name,
+      annotations: {
+        "kubernetes.io/ingress.class": "internal",
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta)
+          .name!
+      }
+    },
+    spec: {
+      tls: [
+        {
+          hosts: ["*.m3o.sh"],
+          secretName: "wildcard-tls"
+        }
+      ],
+      rules: [
+        {
+          host: "grafana.m3o.sh",
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "prefix",
+                backend: {
+                  serviceName: "grafana",
+                  servicePort: 3000
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  { provider, dependsOn: internalChart }
+);
+
+export default [database, dbUser, dbAccess, creds, chart, ingress];

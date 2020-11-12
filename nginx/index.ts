@@ -3,10 +3,6 @@ import * as k8s from "@pulumi/kubernetes";
 import * as gcp from "@pulumi/gcp";
 import { provider } from "../cluster";
 import { tailscaleImage } from "../tailscale";
-// import { letsEncryptCerts } from "../certmanager";
-// import { ObjectMeta } from "../crd/meta/v1";
-// import { namespace } from "../monitoring";
-// import grafana from "../grafana";
 
 const conf = new pulumi.Config("gcp");
 const cf = new pulumi.Config("dply");
@@ -58,10 +54,26 @@ export const tailscaleCreds = new k8s.core.v1.Secret(
   { provider }
 );
 
-new k8s.core.v1.PersistentVolumeClaim("tailscale-state", {
-  metadata: { name: "tailscale-nginx-ingress-state" },
-  spec: { resources: { requests: { storage: "1Gi" } } }
-});
+export const pvc = new k8s.core.v1.PersistentVolumeClaim(
+  "tailscale-state",
+  {
+    metadata: {
+      name: "tailscale-nginx-ingress-state",
+      namespace: namespace.metadata.name,
+    },
+    spec: {
+      accessModes: [
+        'ReadWriteOnce',
+      ],
+      resources: {
+        requests: {
+          storage: "1Gi"
+        },
+      },
+    },
+  },
+  { provider },
+);
 
 export const internalChart = new k8s.helm.v3.Chart(
   "nginx-internal",
@@ -124,7 +136,7 @@ export const internalChart = new k8s.helm.v3.Chart(
       }
     }
   },
-  { provider, dependsOn: externalIP }
+  { provider, dependsOn: [externalIP, pvc] }
 );
 
 // export const grpcIngress = new k8s.networking.v1beta1.Ingress(
@@ -204,50 +216,11 @@ export const internalChart = new k8s.helm.v3.Chart(
 //   { provider, dependsOn: externalChart },
 // );
 
-// const grafanaIngress = new k8s.networking.v1beta1.Ingress(
-//   "grafana-ingress",
-//   {
-//     metadata: {
-//       name: "grafana-ingress",
-//       namespace: namespace.metadata.name,
-//       annotations: {
-//         "kubernetes.io/ingress.class": "nginx",
-//         "cert-manager.io/issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-//       },
-//     },
-//     spec: {
-//       tls: [
-//         {
-//           hosts: ["grafana.m3o.sh"],
-//         }
-//       ],
-//       rules: [
-//         {
-//           host: "grafana.m3o.sh",
-//           http: {
-//             paths: [
-//               {
-//                 path: "/",
-//                 pathType: "prefix",
-//                 backend: {
-//                   serviceName: "grafana",
-//                   servicePort: 3000,
-//                 },
-//               },
-//             ],
-//           },
-//         },
-//       ],
-//     },
-//   },
-//   { provider, dependsOn: externalChart },
-// );
-
 export default [
-  // internalChart,
+  internalChart,
   externalChart,
-  externalIP
-  // grafanaIngress,
+  externalIP,
+  pvc,
   // grpcIngress,
   // httpIngress,
 ];

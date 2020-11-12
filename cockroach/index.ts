@@ -8,7 +8,7 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const tlsServer = new crd.certmanager.v1.Certificate(
+export const serverTLS = new crd.certmanager.v1.Certificate(
   "cockroach-tls-server",
   {
     metadata: {
@@ -40,7 +40,33 @@ export const tlsServer = new crd.certmanager.v1.Certificate(
   { provider }
 );
 
-export const tlsPeer = new crd.certmanager.v1.Certificate(
+export const clientTLS = new crd.certmanager.v1.Certificate(
+  "cockroach-tls-client",
+  {
+    metadata: {
+      name: "cockroach-tls-client",
+    },
+    spec: {
+      secretName: "cockroach-tls-client",
+      subject: {
+        organizations: ["m3o"]
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256
+      },
+      commonName: "node",
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer"
+      }
+    }
+  },
+  { provider }
+);
+
+export const peerTLS = new crd.certmanager.v1.Certificate(
   "cockroach-tls-peer",
   {
     metadata: {
@@ -89,8 +115,8 @@ export const chart = new k8s.helm.v3.Chart(
         certs: {
           provided: true,
           tlsSecret: true,
-          clientRootSecret: tlsPeer.spec.secretName,
-          nodeSecret: tlsServer.spec.secretName,
+          clientRootSecret: peerTLS.spec.secretName,
+          nodeSecret: serverTLS.spec.secretName,
         }
       },
       storage: { persistentVolume: { storageClass: "ssd" } }
@@ -99,4 +125,4 @@ export const chart = new k8s.helm.v3.Chart(
   { provider }
 );
 
-export default [namespace, tlsServer, chart];
+export default [namespace, peerTLS, serverTLS, clientTLS, chart];

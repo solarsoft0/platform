@@ -23,9 +23,15 @@ export const cluster = new gcp.container.Cluster("cluster", {
 
 export const nodePool = new gcp.container.NodePool("micro", {
   cluster: cluster.name,
-  nodeCount: 1,
   autoscaling: { minNodeCount: 1, maxNodeCount: 3 },
-  nodeConfig: { preemptible: true, machineType: "e2-standard-2" }
+  nodeConfig: {
+    preemptible: true,
+    machineType: "e2-standard-2",
+    oauthScopes: [
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/monitoring.write",
+    ],
+  },
 });
 
 // Manufacture a GKE-style Kubeconfig. Note that this is slightly "different" because of the way GKE requires

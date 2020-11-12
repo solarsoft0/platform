@@ -30,8 +30,7 @@ const datasource = YAML.stringify({
       name: "Prometheus",
       type: "prometheus",
       access: "proxy",
-      url: "prometheus:80",
-      // version: "1",
+      url: "http://prometheus-server",
     },
   ],
 });
