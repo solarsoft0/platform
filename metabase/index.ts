@@ -22,7 +22,7 @@ export const dbUser = new K8SExec(
       "-c",
       `create user metabase with password '${cf
         .require("metabase_db_password")
-        .toString()}';`
+        .toString()}' SUPERUSER;`
     ]
   },
   { dependsOn: timescale }
