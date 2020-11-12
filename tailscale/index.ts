@@ -12,7 +12,7 @@ export const tailscaleImage = new docker.Image(
     imageName: pulumi.interpolate`eu.gcr.io/${gcp.config.project}/tailscale:latest`,
     build: {
       context: "./tailscale"
-    }
+    },
   },
   { dependsOn: registry }
 );

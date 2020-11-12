@@ -109,7 +109,7 @@ export const internalChart = new k8s.helm.v3.Chart(
         extraContainers: [
           {
             name: "nginx-ingress-tailscaled",
-            image: tailscaleImage.imageName,
+            image: tailscaleImage.baseImageName,
             imagePullPolicy: "Always",
             volumeMounts: [
               {
