@@ -27,10 +27,12 @@ export const peerTLS = new crd.certmanager.v1.Certificate(
         size: 256
       },
       dnsNames: [
-        "*.nats.nats.svc.cluster.local",
         "nats.nats.svc.cluster.local",
-        "nats.nats"
+        "*.nats.nats.svc",
+        "nats.nats",
+        "nats",
       ],
+      commonName: "nats",
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer"
@@ -58,7 +60,12 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
         size: 256
       },
       commonName: "nats",
-      dnsNames: ["nats.nats.svc.cluster.local", "*.nats.nats.svc", "nats"],
+      dnsNames: [
+        "nats.nats.svc.cluster.local",
+        "*.nats.nats.svc",
+        "nats.nats",
+        "nats",
+      ],
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer"
@@ -115,7 +122,10 @@ export const chart = new k8s.helm.v3.Chart(
         enabled: true,
         replicas: 3,
         tls: {
-          secret: { name: (peerTLS.metadata as ObjectMeta).name }
+          secret: { name: (peerTLS.metadata as ObjectMeta).name },
+          ca: "ca.crt",
+          cert: "tls.crt",
+          key: "tls.key",
         }
       },
       metrics: { enabled: true }

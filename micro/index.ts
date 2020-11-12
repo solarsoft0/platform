@@ -72,7 +72,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
                   },
                   {
                     name: 'MICRO_BROKER_ADDRESS',
-                    value: 'nats-cluster.nats:6222',
+                    value: 'nats.nats:4222',
                   },
                   {
                     name: 'MICRO_BROKER_TLS_CA',
@@ -85,10 +85,6 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
                   {
                     name: 'MICRO_BROKER_TLS_KEY',
                     value: '/certs/broker/tls.key',
-                  },
-                  {
-                    name: 'MICRO_EVENTS_ADDRESS',
-                    value: 'nats-cluster.nats-streaming:6222',
                   },
                   {
                     name: 'MICRO_EVENTS_TLS_CA',
@@ -180,6 +176,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
                 name: 'cockroachdb-client-certs',
                 secret: {
                   secretName: cockroach.clientTLS.spec.secretName,
+                  defaultMode: 444,
                 },
               },
             ],
@@ -227,7 +224,6 @@ export const brokerDeployment = microDeployment('broker', 8003);
 export const configDeployment = microDeployment('config', 8081);
 export const eventsDeployment = microDeployment('events', 8080);
 export const registryDeployment = microDeployment('registry', 8000);
-export const routerDeployment = microDeployment('router', 8084);
 export const runtimeDeployment = microDeployment('runtime', 8088);
 export const storeDeployment = microDeployment('store', 8002);
 
@@ -238,7 +234,6 @@ const server = [
   eventsDeployment,
   networkDeployment,
   registryDeployment,
-  routerDeployment,
   runtimeDeployment,
   storeDeployment,
 ]
@@ -250,7 +245,7 @@ export const jwtCert = new crd.certmanager.v1.Certificate(
       name: 'jwt-creds',
     },
     spec: {
-      duration: "10y",
+      duration: "87600h", // 10 years
       secretName: 'jwt-creds',
       subject: {
         organizations: ['m3o']
@@ -269,35 +264,6 @@ export const jwtCert = new crd.certmanager.v1.Certificate(
   },
   { provider }
 )
-
-export const apiService = new k8s.core.v1.Service(
-  'micro-api-service',
-  {
-    metadata: {
-      name: 'micro-api',
-      labels: {
-        name: 'api',
-        version: 'latest',
-        micro: 'server',
-      },
-    },
-    spec: {
-      ports: [
-        {
-          name: 'http',
-          port: 8080,
-          targetPort: 8080,
-        },
-      ],
-      selector: {
-        name: 'api',
-        version: 'latest',
-        micro: 'server',        
-      },
-    },
-  },
-  { provider },
-);
 
 export const apiDeployment = new k8s.apps.v1.Deployment(
   'micro-api-deployment',
@@ -393,13 +359,13 @@ export const apiDeployment = new k8s.apps.v1.Deployment(
   { provider, dependsOn: [...server, jwtCert] },
 )
 
-export const proxyService = new k8s.core.v1.Service(
-  'micro-proxy-service',
+export const apiService = new k8s.core.v1.Service(
+  'micro-api-service',
   {
     metadata: {
-      name: 'micro-proxy',
+      name: 'micro-api',
       labels: {
-        name: 'proxy',
+        name: 'api',
         version: 'latest',
         micro: 'server',
       },
@@ -407,19 +373,19 @@ export const proxyService = new k8s.core.v1.Service(
     spec: {
       ports: [
         {
-          name: 'grpc',
-          port: 8081,
-          targetPort: 8081,
+          name: 'http',
+          port: 8080,
+          targetPort: 8080,
         },
       ],
       selector: {
-        name: 'proxy',
+        name: 'api',
         version: 'latest',
         micro: 'server',        
       },
     },
   },
-  { provider },
+  { provider, dependsOn: apiDeployment },
 );
 
 export const proxyDeployment = new k8s.apps.v1.Deployment(
@@ -512,6 +478,35 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
   { provider, dependsOn: [...server, jwtCert] },
 )
 
+export const proxyService = new k8s.core.v1.Service(
+  'micro-proxy-service',
+  {
+    metadata: {
+      name: 'micro-proxy',
+      labels: {
+        name: 'proxy',
+        version: 'latest',
+        micro: 'server',
+      },
+    },
+    spec: {
+      ports: [
+        {
+          name: 'grpc',
+          port: 8081,
+          targetPort: 8081,
+        },
+      ],
+      selector: {
+        name: 'proxy',
+        version: 'latest',
+        micro: 'server',        
+      },
+    },
+  },
+  { provider, dependsOn: proxyDeployment },
+);
+
 export default [
   authDeployment,
   brokerDeployment,
@@ -519,7 +514,6 @@ export default [
   eventsDeployment,
   networkDeployment,
   registryDeployment,
-  routerDeployment,
   runtimeDeployment,
   storeDeployment,
   networkService,
