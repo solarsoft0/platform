@@ -31,6 +31,7 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
         "etcd.etcd.svc.cluster.local",
          "*.etcd-headless.etcd.svc.cluster.local",
          "etcd",
+         "etcd.etcd",
       ],
       issuerRef: {
         name: "ca",

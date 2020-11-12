@@ -10,6 +10,33 @@ const image = 'bentoogood/micro:pulumi';
 const imagePullPolicy = 'Always';
 const replicas = 2;
 
+export const jwtCert = new crd.certmanager.v1.Certificate(
+  'jwt-creds',
+  {
+    metadata: {
+      name: 'jwt-creds',
+    },
+    spec: {
+      duration: "87600h", // 10 years
+      secretName: 'jwt-creds',
+      subject: {
+        organizations: ['m3o']
+      },
+      isCA: false,
+      commonName: 'auth',
+      privateKey: {
+        algorithm: 'RSA',
+        size: 4096
+      },
+      issuerRef: {
+        name: 'ca',
+        kind: 'ClusterIssuer'
+      }
+    }
+  },
+  { provider }
+)
+
 function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
   let proxy: string = '';
   let dependsOn: any[] = [...cockroach.default, ...etcd.default, ...nats.default];
@@ -69,6 +96,28 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
                   {
                     name: 'MICRO_PROXY',
                     value: proxy,
+                  },
+                  {
+                    name: 'MICRO_AUTH_PUBLIC_KEY',
+                    valueFrom: {
+                      secretKeyRef: {
+                        name: (jwtCert.metadata as ObjectMeta).name,
+                        key: "tls.crt",
+                      },
+                    },
+                  },
+                  {
+                    name: 'MICRO_AUTH_PRIVATE_KEY',
+                    valueFrom: {
+                      secretKeyRef: {
+                        name: (jwtCert.metadata as ObjectMeta).name,
+                        key: "tls.key",
+                      },
+                    },
+                  },
+                  {
+                    name: 'MICRO_SERVICE_ADDRESS',
+                    value: `:${port}`,
                   },
                   {
                     name: 'MICRO_BROKER_ADDRESS',
@@ -176,7 +225,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
                 name: 'cockroachdb-client-certs',
                 secret: {
                   secretName: cockroach.clientTLS.spec.secretName,
-                  defaultMode: 444,
+                  defaultMode: 0o600,
                 },
               },
             ],
@@ -237,33 +286,6 @@ const server = [
   runtimeDeployment,
   storeDeployment,
 ]
-
-export const jwtCert = new crd.certmanager.v1.Certificate(
-  'jwt-creds',
-  {
-    metadata: {
-      name: 'jwt-creds',
-    },
-    spec: {
-      duration: "87600h", // 10 years
-      secretName: 'jwt-creds',
-      subject: {
-        organizations: ['m3o']
-      },
-      isCA: false,
-      commonName: 'auth',
-      privateKey: {
-        algorithm: 'ECDSA',
-        size: 256
-      },
-      issuerRef: {
-        name: 'ca',
-        kind: 'ClusterIssuer'
-      }
-    }
-  },
-  { provider }
-)
 
 export const apiDeployment = new k8s.apps.v1.Deployment(
   'micro-api-deployment',
@@ -459,7 +481,7 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
               ports: [
                 {
                   name: 'proxy-port',
-                  containerPort: 8080,
+                  containerPort: 8081,
                 }
               ],
               readinessProbe: {
