@@ -120,7 +120,6 @@ export const chart = new k8s.helm.v3.Chart(
           nodeSecret: serverTLS.spec.secretName
         }
       },
-      storage: { persistentVolume: { storageClass: "ssd" } }
     }
   },
   { provider }
@@ -153,7 +152,7 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
             paths: [
               {
                 path: "/",
-                pathType: "prefix",
+                pathType: "Prefix",
                 backend: {
                   serviceName: "cockroach-cockroachdb",
                   servicePort: 8080

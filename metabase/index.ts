@@ -8,7 +8,7 @@ import { letsEncryptCerts } from "../certmanager";
 import { ObjectMeta } from "../crd/meta/v1";
 import { internalChart } from "../nginx";
 
-const cf = new pulumi.Config("dply");
+const cf = new pulumi.Config("m3o");
 
 export const dbUser = new K8SExec(
   "metabase-user",
@@ -127,7 +127,7 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
             paths: [
               {
                 path: "/",
-                pathType: "prefix",
+                pathType: "Prefix",
                 backend: {
                   serviceName: "metabase",
                   servicePort: 80

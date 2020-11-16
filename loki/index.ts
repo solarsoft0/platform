@@ -1,45 +1,17 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";  
 import { provider } from '../cluster';
 import { namespace } from '../monitoring';
 import * as YAML from 'yamljs';
+import * as ocean from "@pulumi/digitalocean";
+import { project } from "../cluster";
 
-const conf = new pulumi.Config("gcp");
+const conf = new pulumi.Config("digitalocean");
 
-// -------- LOKI --------
-export const serviceAccount = new gcp.serviceaccount.Account("loki", {
-  accountId: "lokilogs"
-});
-
-export const serviceAccountBinding = new gcp.projects.IAMBinding("loki-storage-admin-binding", {
-  members: [pulumi.interpolate`serviceAccount:${serviceAccount.email}`],
-  role: "roles/storage.objectAdmin"
-}, { dependsOn: serviceAccount });
-
-export const serviceAccountKey = new gcp.serviceaccount.Key("loki-gcs", {
-  serviceAccountId: serviceAccount.id
-});
-
-export const creds = new k8s.core.v1.Secret(
-  "loki-credentials",
-  {
-    metadata: {
-      namespace: namespace.metadata.name,
-      name: "loki-credentials"
-    },
-    stringData: {
-      gcsKeyJson: serviceAccountKey.privateKey.apply((s: string) => {
-        let buff = new Buffer(s, "base64");
-        return buff.toString("ascii");
-      })
-    }
-  },
-  { provider }
-);
-
-export const bucket = new gcp.storage.Bucket("lokilogs", {
-  location: conf.require("region")
+export const bucket = new ocean.SpacesBucket("loki-logs", {
+  region: "ams3",
+}, {
+  parent: project,
 });
 
 export const chart = new k8s.helm.v3.Chart(
@@ -54,8 +26,11 @@ export const chart = new k8s.helm.v3.Chart(
         boltdb_shipper: {
           shared_store: "gcs"
         },
-        gcs: {
-          bucket_name: bucket.name
+        aws: {
+          endpoint: "ams3.digitaloceanspaces.com",
+          region: bucket.region,
+          access_key_id: conf.require("spacesAccessId"),
+          secret_access_key: conf.require("spacesSecretKey"),
         }
       },
       schema_config: {
@@ -73,20 +48,9 @@ export const chart = new k8s.helm.v3.Chart(
           }
         ]
       },
-      env: [
-        {
-          name: "GOOGLE_APPLICATION_CREDENTIALS",
-          valueFrom: {
-            secretKeyRef: {
-              name: creds.metadata.name,
-              key: "gcsKeyJson"
-            }
-          }
-        }
-      ]
-    }
+    },
   },
-  { provider, dependsOn: [serviceAccountBinding] }
+  { provider }
 );
 
 const datasource = YAML.stringify({
@@ -121,10 +85,6 @@ export const configMap = new k8s.core.v1.ConfigMap(
 );
 
 export default [
-  serviceAccount,
-  serviceAccountBinding,
-  serviceAccountKey,
-  creds,
   bucket,
   chart,
   configMap,

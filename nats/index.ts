@@ -80,7 +80,6 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "nats-client-tls",
-      namespace: namespace.metadata.name
     },
     spec: {
       secretName: "nats-client-tls",

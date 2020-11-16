@@ -178,7 +178,7 @@ export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
 
 function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
   let proxy: string = '';
-  let dependsOn: any[] = [...cockroach.default, ...etcd.default, ...nats.default];
+  let dependsOn: any[] = [cockroach.default, etcd.default, nats.default];
 
   if(srv !== 'network') {
     // use the network as the proxy 
