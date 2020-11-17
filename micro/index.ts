@@ -1,10 +1,11 @@
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import * as ocean from '@pulumi/digitalocean';
 import * as etcd from '../etcd';
 import * as nats from '../nats';
 import * as cockroach from '../cockroach';
 import * as crd from '../crd';
-import { provider } from '../cluster';
+import { project, provider } from '../cluster';
 import { ObjectMeta } from '../crd/meta/v1';
 import { Output } from '@pulumi/pulumi';
 
@@ -175,23 +176,143 @@ export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
     ]  
   },
   { provider },
-)
+);
+
+const conf = new pulumi.Config('digitalocean');
+export const spacesSecret = new k8s.core.v1.Secret("spaces-secret", {
+  metadata: {
+    name: "do-spaces",
+  },
+  stringData: {
+    accessId: conf.require('spacesAccessId'),
+    secretKey: conf.require('spacesSecretKey'),
+  },
+}, { provider })
 
 function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
-  let proxy: any = '';
-  let dependsOn: any[] = [cockroach.default, etcd.default, nats.default];
+  let env: pulumi.Input<pulumi.Input<k8s.types.input.core.v1.EnvVar>[]> = [
+    {
+      name: 'MICRO_SERVICE_NAME',
+      value: srv,
+    },
+    {
+      name: 'MICRO_PROFILE',
+      value: 'platform',
+    },
+    {
+      name: 'MICRO_AUTH_PUBLIC_KEY',
+      valueFrom: {
+        secretKeyRef: {
+          name: (jwtCert.metadata as ObjectMeta).name,
+          key: "tls.crt",
+        },
+      },
+    },
+    {
+      name: 'MICRO_AUTH_PRIVATE_KEY',
+      valueFrom: {
+        secretKeyRef: {
+          name: (jwtCert.metadata as ObjectMeta).name,
+          key: "tls.key",
+        },
+      },
+    },
+    {
+      name: 'MICRO_SERVICE_ADDRESS',
+      value: `:${port}`,
+    },
+    {
+      name: 'MICRO_BROKER_ADDRESS',
+      value: 'nats.nats:4222',
+    },
+    {
+      name: 'MICRO_BROKER_TLS_CA',
+      value: '/certs/broker/ca.crt',
+    },
+    {
+      name: 'MICRO_BROKER_TLS_CERT',
+      value: '/certs/broker/tls.crt',
+    },
+    {
+      name: 'MICRO_BROKER_TLS_KEY',
+      value: '/certs/broker/tls.key',
+    },
+    {
+      name: 'MICRO_EVENTS_TLS_CA',
+      value: '/certs/events/ca.crt',
+    },
+    {
+      name: 'MICRO_EVENTS_TLS_CERT',
+      value: '/certs/events/tls.crt',
+    },
+    {
+      name: 'MICRO_EVENTS_TLS_KEY',
+      value: '/certs/events/tls.key',
+    },
+    {
+      name: 'MICRO_REGISTRY_TLS_CA',
+      value: '/certs/registry/ca.crt',
+    },
+    {
+      name: 'MICRO_REGISTRY_TLS_CERT',
+      value: '/certs/registry/tls.crt',
+    },
+    {
+      name: 'MICRO_REGISTRY_TLS_KEY',
+      value: '/certs/registry/tls.key',
+    },
+    {
+      name: 'MICRO_REGISTRY_ADDRESS',
+      value: 'etcd.etcd:2379',
+    },
+    {
+      name: 'MICRO_STORE_ADDRESS',
+      value: `postgresql://root@cockroach-cockroachdb-public.cockroach:26257?ssl=true&sslmode=require&sslrootcert=certs/store/ca.crt&sslkey=certs/store/tls.key&sslcert=certs/store/tls.crt`,
+    },
+  ];
+
+  if(srv === 'runtime' || srv === 'store') {
+    env.push(
+      {
+        name: 'MICRO_BLOB_STORE_REGION',
+        value: 'ams3',
+      },
+      {
+        name: 'MICRO_BLOB_STORE_ENDPOINT',
+        value: 'ams3.digitaloceanspaces.com',
+      },
+      {
+        name: 'MICRO_BLOB_STORE_ACCESS_KEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: spacesSecret.metadata.name,
+            key: 'accessId',
+          },
+        },
+      },
+      {
+        name: 'MICRO_BLOB_STORE_SECRET_KEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: spacesSecret.metadata.name,
+            key: 'secretKey',
+          },
+        },
+      },
+    );
+  }
 
   if(srv !== 'network') {
     // use the network as the proxy 
-    proxy = pulumi.interpolate `${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`;
-    dependsOn.push(networkService);
+    env.push({
+      name: 'MICRO_PROXY',
+      value: pulumi.interpolate `${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`,
+    });
   }
 
   let serviceAccount: Output<string> | string = 'default';
   if(srv === 'runtime') {
     serviceAccount = runtimeServiceAccount.metadata.name;
-    dependsOn.push(runtimeClusterRoleBinding);
-    dependsOn.push(runtimeRoleBinding);
   }
 
   return new k8s.apps.v1.Deployment(
@@ -232,90 +353,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
             containers: [
               {
                 name: 'micro',
-                env: [
-                  {
-                    name: 'MICRO_SERVICE_NAME',
-                    value: srv,
-                  },
-                  {
-                    name: 'MICRO_PROFILE',
-                    value: 'platform',
-                  },
-                  {
-                    name: 'MICRO_PROXY',
-                    value: proxy,
-                  },
-                  {
-                    name: 'MICRO_AUTH_PUBLIC_KEY',
-                    valueFrom: {
-                      secretKeyRef: {
-                        name: (jwtCert.metadata as ObjectMeta).name,
-                        key: "tls.crt",
-                      },
-                    },
-                  },
-                  {
-                    name: 'MICRO_AUTH_PRIVATE_KEY',
-                    valueFrom: {
-                      secretKeyRef: {
-                        name: (jwtCert.metadata as ObjectMeta).name,
-                        key: "tls.key",
-                      },
-                    },
-                  },
-                  {
-                    name: 'MICRO_SERVICE_ADDRESS',
-                    value: `:${port}`,
-                  },
-                  {
-                    name: 'MICRO_BROKER_ADDRESS',
-                    value: 'nats.nats:4222',
-                  },
-                  {
-                    name: 'MICRO_BROKER_TLS_CA',
-                    value: '/certs/broker/ca.crt',
-                  },
-                  {
-                    name: 'MICRO_BROKER_TLS_CERT',
-                    value: '/certs/broker/tls.crt',
-                  },
-                  {
-                    name: 'MICRO_BROKER_TLS_KEY',
-                    value: '/certs/broker/tls.key',
-                  },
-                  {
-                    name: 'MICRO_EVENTS_TLS_CA',
-                    value: '/certs/events/ca.crt',
-                  },
-                  {
-                    name: 'MICRO_EVENTS_TLS_CERT',
-                    value: '/certs/events/tls.crt',
-                  },
-                  {
-                    name: 'MICRO_EVENTS_TLS_KEY',
-                    value: '/certs/events/tls.key',
-                  },
-                  {
-                    name: 'MICRO_REGISTRY_TLS_CA',
-                    value: '/certs/registry/ca.crt',
-                  },
-                  {
-                    name: 'MICRO_REGISTRY_TLS_CERT',
-                    value: '/certs/registry/tls.crt',
-                  },
-                  {
-                    name: 'MICRO_REGISTRY_TLS_KEY',
-                    value: '/certs/registry/tls.key',
-                  },
-                  {
-                    name: 'MICRO_REGISTRY_ADDRESS',
-                    value: 'etcd.etcd:2379',
-                  },
-                  {
-                    name: 'MICRO_STORE_ADDRESS',
-                    value: `postgresql://root@cockroach-cockroachdb-public.cockroach:26257?ssl=true&sslmode=require&sslrootcert=certs/store/ca.crt&sslkey=certs/store/tls.key&sslcert=certs/store/tls.crt`,
-                  },
-                ],
+                env,
                 args: ['service', srv],
                 image,
                 imagePullPolicy,
@@ -381,7 +419,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
         },
       },
     },
-    { provider, dependsOn },
+    { provider },
   )
 }
 
