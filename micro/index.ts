@@ -352,6 +352,16 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
             serviceAccount,
             containers: [
               {
+                resources: {
+                  limits: {
+                    cpu: '1',
+                    memory: '4Gi',
+                  },
+                  requests: {
+                    cpu: '100m',
+                    memory: '100Mi',
+                  },
+                },
                 name: 'micro',
                 env,
                 args: ['service', srv],

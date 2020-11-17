@@ -1,7 +1,10 @@
 import * as k8s from "@pulumi/kubernetes";
+import * as pulumi from "@pulumi/pulumi";
 import { namespace as tsNamespace, default as ts } from '../timescale';
 import { kubeconfig, provider } from '../cluster';
 import { K8SExec } from '../exec';
+
+const conf = new pulumi.Config();
 
 export const namespace = new k8s.core.v1.Namespace(
   "monitoring",
@@ -21,7 +24,44 @@ export const database = new K8SExec(
   { dependsOn: ts }
 );
 
+
+export const dbUser = new K8SExec(
+  "analytics-user",
+  {
+    namespace: tsNamespace.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: kubeconfig,
+    cmd: [
+      "psql",
+      "-c",
+      `create user analytics with password '${conf
+        .require("analytics_db_password")
+        .toString()}';`
+    ]
+  },
+  { dependsOn: ts }
+);
+
+export const dbAccessAnalytics = new K8SExec(
+  "analytics-grant",
+  {
+    namespace: tsNamespace.metadata.name,
+    podSelector: "role=master",
+    container: "timescaledb",
+    kubeConfig: kubeconfig,
+    cmd: [
+      "psql",
+      "-c",
+      `GRANT ALL PRIVILEGES ON DATABASE analytics TO analytics`
+    ]
+  },
+  { dependsOn: [...ts, dbUser] }
+);
+
 export default [
   namespace,
   database,
+  dbUser,
+  dbAccessAnalytics,
 ]
