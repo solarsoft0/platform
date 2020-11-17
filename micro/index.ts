@@ -1,4 +1,5 @@
 import * as k8s from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
 import * as etcd from '../etcd';
 import * as nats from '../nats';
 import * as cockroach from '../cockroach';
@@ -177,12 +178,12 @@ export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
 )
 
 function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
-  let proxy: string = '';
+  let proxy: any = '';
   let dependsOn: any[] = [cockroach.default, etcd.default, nats.default];
 
   if(srv !== 'network') {
     // use the network as the proxy 
-    proxy = `${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`;
+    proxy = pulumi.interpolate `${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`;
     dependsOn.push(networkService);
   }
 
