@@ -119,8 +119,8 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["*.m3o.sh"],
-          secretName: "wildcard-tls"
+          hosts: ["grafana.m3o.sh"],
+          secretName: "grafana-tls"
         }
       ],
       rules: [

@@ -1,17 +1,47 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";  
 import { provider } from '../cluster';
 import { namespace } from '../monitoring';
 import * as YAML from 'yamljs';
-import * as ocean from "@pulumi/digitalocean";
-import { project } from "../cluster";
 
-const conf = new pulumi.Config("digitalocean");
+const conf = new pulumi.Config("gcp");
 
-export const bucket = new ocean.SpacesBucket("loki-logs", {
-  region: "ams3",
-}, {
-  parent: project,
+export const serviceAccount = new gcp.serviceaccount.Account("loki", {
+  accountId: "lokilogs",
+  project: conf.require("project"),
+});
+
+export const serviceAccountBinding = new gcp.projects.IAMBinding("loki-storage-admin-binding", {
+  members: [pulumi.interpolate`serviceAccount:${serviceAccount.email}`],
+  role: "roles/storage.objectAdmin",
+  project: conf.require("project"),
+}, { dependsOn: serviceAccount });
+
+export const serviceAccountKey = new gcp.serviceaccount.Key("loki-gcs", {
+  serviceAccountId: serviceAccount.id,
+});
+
+export const creds = new k8s.core.v1.Secret(
+  "loki-credentials",
+  {
+    metadata: {
+      namespace: namespace.metadata.name,
+      name: "loki-credentials"
+    },
+    stringData: {
+      gcsKeyJson: serviceAccountKey.privateKey.apply((s: string) => {
+        let buff = new Buffer(s, "base64");
+        return buff.toString("ascii");
+      })
+    }
+  },
+  { provider }
+);
+
+export const bucket = new gcp.storage.Bucket("loki-bucket", {
+  location: conf.require("region"),
+  project: conf.require("project"),
 });
 
 export const chart = new k8s.helm.v3.Chart(
@@ -22,21 +52,35 @@ export const chart = new k8s.helm.v3.Chart(
     version: "2.0.2",
     fetchOpts: { repo: "https://grafana.github.io/loki/charts" },
     values: {
-      storage_config: {
-        boltdb_shipper: {
-          shared_store: "gcs"
+      config: {
+        auth_enabled: false,
+        server: {
+          http_listen_port: 3100
         },
-        aws: {
-          endpoint: "ams3.digitaloceanspaces.com",
-          region: bucket.region,
-          access_key_id: conf.require("spacesAccessId"),
-          secret_access_key: conf.require("spacesSecretKey"),
-        }
-      },
-      schema_config: {
-        configs: [
-          {
-            configs: {
+        distributor: {
+          ring: {
+            kvstore: {
+              store: "memberlist"
+            }
+          }
+        },
+        ingester: {
+          lifecycler: {
+            ring: {
+              kvstore: {
+                store: "memberlist"
+              },
+              replication_factor: 1
+            },
+            final_sleep: "0s"
+          },
+          chunk_idle_period: "5m",
+          chunk_retain_period: "30s"
+        },
+        schema_config: {
+          configs: [
+            {
+              from: "2020-05-15",
               store: "boltdb-shipper",
               object_store: "gcs",
               schema: "v11",
@@ -45,9 +89,52 @@ export const chart = new k8s.helm.v3.Chart(
                 period: "24h"
               }
             }
+          ]
+        },
+        storage_config: {
+          boltdb_shipper: {
+            active_index_directory: "/data/index",
+            cache_location: "/data/index_cache",
+            resync_interval: "5s",
+            shared_store: "gcs"
+          },
+          gcs: {
+            bucket_name: bucket.name,
           }
-        ]
+        },
+        limits_config: {
+          enforce_metric_name: false,
+          reject_old_samples: true,
+          reject_old_samples_max_age: "168h"
+        },
       },
+      env: [
+        {
+          name: "GOOGLE_APPLICATION_CREDENTIALS",
+          value: '/creds/google'
+        }
+      ],
+      extraVolumes: [
+        {
+          name: 'google-creds',
+          secret: {
+            secretName: creds.metadata.name,
+            items: [
+              {
+                key: 'gcsKeyJson',
+                path: 'google',
+              }
+            ]
+          },
+        },
+      ],
+      extraVolumeMounts: [
+        {
+          name: 'google-creds',
+          mountPath: '/creds',
+          readOnly: true,
+        },
+      ]
     },
   },
   { provider }
@@ -85,6 +172,10 @@ export const configMap = new k8s.core.v1.ConfigMap(
 );
 
 export default [
+  serviceAccount,
+  serviceAccountBinding,
+  serviceAccountKey,
+  creds,
   bucket,
   chart,
   configMap,
