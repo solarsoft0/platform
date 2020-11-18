@@ -24,7 +24,7 @@ export const externalChart = new k8s.helm.v3.Chart(
   "nginx",
   {
     chart: "ingress-nginx",
-    version: "3.9.0",
+    version: "3.10.1",
     fetchOpts: {
       repo: "https://kubernetes.github.io/ingress-nginx"
     },
