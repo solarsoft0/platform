@@ -1,0 +1,43 @@
+config:
+  digitalocean:cloudflare-api-key:
+    secure: AAABAMplsanUi5s5+U1x7Lvs431x0izMkYa4QN6dZqeT9QbUqHUaQMy2kMm6U03/iUyJCklTS7tu6oDyyzJ5ASlYCB4SAvlQ
+  digitalocean:env: production
+  digitalocean:k8s_version: 1.19.3-do.2
+  digitalocean:name: Production
+  digitalocean:region: lon1
+  digitalocean:spacesAccessId:
+    secure: AAABAGJzuCwGq/RpngmLvaPL4vK6r+JRRjFIKUNPK8qXs/h184ka+kVQPkhiijUmMlUG5Q==
+  digitalocean:spacesSecretKey:
+    secure: AAABAOUi2oj7il91f/Ax9Cu4D+w9+n3qrY8J/V3fzIIpVBYk87w9QP4NnrcuM1HlPBlLUW19jPDwDUBbDk2ixWzyUN1m+RRxM1QR
+  digitalocean:token:
+    secure: AAABAIrkcJfJvxhw1yl5gpi1rp+DXAteha8LcHD30HR9AHIka+sIk+TZuh/mRcElWul8DW782X/3fTSElhasgaSO96NDOeK1iAyg5ACuE9xiZsn4zZM7/NHqlJY2v6Sb
+  gcp:project:
+    secure: AAABAI52keNXVAx8b5TjuAgdeBJBD5PzSO1m9IQNcfp7Xi2NbdCTgPE=
+  gcp:region: europe-west2
+  kubernetes:kubeconfig: somewherethatdoesntexist
+  m3o:analytics_db_password:
+    secure: AAABACU741wwKzkQfjVSLFLgps4sicjccnjyl5Zw7JHFlmMXcRSIFDWRpM15Wmt39HKbRBgXFg2Qb5nVx9Qy8Q==
+  m3o:cloudflare-api-key:
+    secure: AAABANe2U2EQguwoIedzsoDpBYDeW5mXqIUmviSW5Uh0nYrmMdBregUzFyYo+P3PiHnearSSQTBLKQO5ZtWqhcb9M9Zkl2cZ
+  m3o:google_oauth_client_id:
+    secure: AAABAGspf0zNmkEBQZWTwFiIRLeTgwtVfttbQ3PnnsDbHGzg9sF79sAR8BGETOR6RFvgCgpT5e6xmhOcmIiGHUhmR1q0mFfglEEBMZpNhUswOsqh8752E+G+bI2siLi45SSM99NvKzU=
+  m3o:google_oauth_secret_id:
+    secure: AAABADBiPtG7kGlCbDniS5u2cfgQAtwjRsFGT3TiTOpuYhgaf+Ke6/p7gMAhg4c2ClEGcU07B6I=
+  m3o:grafana-admin-pass:
+    secure: AAABAK6ppINAMIITIj5pdEVXhtNYNshRBOEmnnWn4qEYgbLPhkUoZHGPVDE2vO9Cs/U5hfV96qpo0v983uTYug==
+  m3o:grafana_postgres_password:
+    secure: AAABAMMLPmjeVKqhQjLpYaN3PqTMPnjVd8kQSIYZ5yUGW9yP7nsiWvxxHSlxNXe5KSn01ymWlLqEdcpLJu3TEA==
+  m3o:metabase_db_password:
+    secure: AAABAE0LQvdmTT7JIiWhd0ixeRFRqVj1hebraCXIAuZTI/YO8sz8jO8WDyV84KLgtLVVZGz8ymeoCCybc3OACg==
+  m3o:metabase_db_username:
+    secure: AAABAP3QU2SScn0ousX8A8cWtDpd1eiEDVyxxn2uE1LccDN3mQ==
+  m3o:patroni_admin_password:
+    secure: AAABANFV7ENqT+WiNzc3j/7tDSYupdpjJpuOJJgYTPxXJ+gJvlHAqcLp530Vsakm9PrDH/iO8yB2BiP3Akl2ug==
+  m3o:patroni_replication_password:
+    secure: AAABADzgUfJv9pv7TyRzvS24jdzcDbCqZkqW/yR6tgck9wzeuYjQsXb6TGRZJUoo3swPKEK069vWJYdYyyf0iw==
+  m3o:patroni_superuser_password:
+    secure: AAABAHfm61O1ICcWJDgVlL6TKxX7xDmq41U/ekQs9/X5xW5zT0IlLtKPIooU4IPuoIWmiJJx1zyiTPc57HQsvw==
+  m3o:promscale_postgres_password:
+    secure: AAABAKC1qvE2EfxERCygCZajXWdPVzVWr26wSEvERVFKB9nizbns7wuRvB6iH+VgmLfECABkp8PDvpJ5dQUrgQ==
+  m3o:tailscale_access_key:
+    secure: AAABAH+qFXfTpv8VEIneUqmJYilZfVcatmaGY1aq2N0q+T1x0FLvsHOP/l0Q5Bfk3lXkv0wB04JEVlruaMo=
