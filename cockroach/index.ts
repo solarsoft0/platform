@@ -60,7 +60,34 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
         algorithm: "ECDSA",
         size: 256
       },
-      commonName: "node",
+      commonName: "root",
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer"
+      }
+    }
+  },
+  { provider }
+);
+
+export const clientTLSDefault = new crd.certmanager.v1.Certificate(
+  "cockroach-tls-client-default",
+  {
+    metadata: {
+      name: "cockroach-tls-client",
+      namespace: "default"
+    },
+    spec: {
+      secretName: "cockroach-tls-client",
+      subject: {
+        organizations: ["m3o"]
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256
+      },
+      commonName: "root",
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer"
@@ -120,7 +147,7 @@ export const chart = new k8s.helm.v3.Chart(
           clientRootSecret: peerTLS.spec.secretName,
           nodeSecret: serverTLS.spec.secretName
         }
-      },
+      }
     }
   },
   { provider }
@@ -168,4 +195,11 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
   { provider, dependsOn: internalChart }
 );
 
-export default [namespace, peerTLS, serverTLS, clientTLS, chart];
+export default [
+  namespace,
+  peerTLS,
+  serverTLS,
+  clientTLS,
+  clientTLSDefault,
+  chart
+];
