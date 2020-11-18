@@ -31,6 +31,7 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
       commonName: "node",
       dnsNames: [
         "*.cockroach-cockroachdb.cockroach.svc.cluster.local",
+        "cockroach-cockroachdb.cockroach",
         "*.cockroach-cockroachdb",
         "cockroach-cockroachdb"
       ],
