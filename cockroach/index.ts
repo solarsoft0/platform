@@ -60,7 +60,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
         algorithm: "ECDSA",
         size: 256
       },
-      commonName: "node",
+      commonName: "root",
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer"
