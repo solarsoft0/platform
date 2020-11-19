@@ -1,5 +1,6 @@
 import "./certmanager";
 import "./cluster";
+import "./micro";
 import "./etcd";
 import "./nats";
 import "./nginx";
@@ -12,5 +13,4 @@ import "./promtail";
 import "./metabase";
 import "./grafana";
 import "./loki";
-import "./micro";
 import "./kata";

@@ -1,6 +1,7 @@
 import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
 import certmanager, { caCerts } from '../certmanager';
+import { serverNamespace } from '../micro';
 import * as crd from '../crd';
 
 export const namespace = new k8s.core.v1.Namespace(
@@ -47,6 +48,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "etcd",
+      namespace: "server",
     },
     spec: {
       secretName: "etcd-tls",

@@ -4,7 +4,7 @@ import * as ocean from "@pulumi/digitalocean";
 import { provider, project } from "../cluster";
 import { letsEncryptCerts } from "../certmanager";
 import { ObjectMeta } from "../crd/meta/v1";
-import { proxyService, apiService } from "../micro";
+import { proxyService, apiService, serverNamespace } from "../micro";
 
 const conf = new pulumi.Config("digitalocean");
 const cf = new pulumi.Config("m3o");
@@ -151,6 +151,7 @@ export const grpcIngress = new k8s.networking.v1beta1.Ingress(
   {
     metadata: {
       name: "grpc-ingress",
+      namespace: "server",
       annotations: {
         "kubernetes.io/ingress.class": "external",
         "nginx.ingress.kubernetes.io/backend-protocol": "GRPC",
@@ -191,6 +192,7 @@ export const httpIngress = new k8s.networking.v1beta1.Ingress(
   {
     metadata: {
       name: "http-ingress",
+      namespace: "server",
       annotations: {
         "kubernetes.io/ingress.class": "external",
         "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,

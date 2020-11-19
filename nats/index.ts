@@ -2,6 +2,7 @@ import * as k8s from "@pulumi/kubernetes";
 import { provider } from "../cluster";
 import * as crd from "../crd";
 import { ObjectMeta } from "../crd/meta/v1";
+import { serverNamespace } from "../micro";
 
 export const namespace = new k8s.core.v1.Namespace(
   "nats",
@@ -80,6 +81,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "nats-client-tls",
+      namespace: "server",
     },
     spec: {
       secretName: "nats-client-tls",
@@ -98,7 +100,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
       }
     }
   },
-  { provider }
+  { provider, dependsOn: serverNamespace }
 );
 
 export const chart = new k8s.helm.v3.Chart(

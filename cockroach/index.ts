@@ -6,6 +6,7 @@ import { ObjectMeta } from "../crd/meta/v1";
 import * as pulumi from "@pulumi/pulumi";
 import { project, provider } from "../cluster";
 import * as crd from "../crd";
+import { serverNamespace } from "../micro";
 
 const cf = new pulumi.Config("digitalocean");
 
@@ -59,11 +60,11 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
 );
 
 export const clientTLS = new crd.certmanager.v1.Certificate(
-  "cockroach-tls-c",
+  "cockroach-tls-client",
   {
     metadata: {
       name: "cockroach-tls-client",
-      namespace: namespace.metadata.name
+      namespace: "server",
     },
     spec: {
       secretName: "cockroach-tls-client",

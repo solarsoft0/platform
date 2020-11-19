@@ -13,11 +13,30 @@ const image = "bentoogood/micro:pulumi";
 const imagePullPolicy = "Always";
 const replicas = 2;
 
+export const microNamespace = new k8s.core.v1.Namespace("micro-namespace", {
+  metadata: {
+    name: "micro",
+    labels: {
+      "owner": "micro",
+    },
+  },
+}, { provider });
+
+export const serverNamespace = new k8s.core.v1.Namespace("server-namespace", {
+  metadata: {
+    name: "server",
+    labels: {
+      "owner": "micro",
+    },
+  },
+}, { provider });
+
 export const jwtCert = new crd.certmanager.v1.Certificate(
   "jwt-creds",
   {
     metadata: {
-      name: "jwt-creds"
+      name: "jwt-creds",
+      namespace: "server",
     },
     spec: {
       duration: "87600h", // 10 years
@@ -61,10 +80,10 @@ export const runtimeBucket = new ocean.SpacesBucket(
 );
 
 export const runtimeServiceAccount = new k8s.core.v1.ServiceAccount(
-  "runtime-service-account",
+  "micro-runtime-sa",
   {
     metadata: {
-      name: "micro-runtime"
+      namespace: "server",
     }
   },
   { provider }
@@ -128,16 +147,13 @@ export const runtimeRole = new k8s.rbac.v1.ClusterRole(
 );
 
 export const runtimeClusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding(
-  "runtime-cluster-role-binding",
+  "micro-runtime-crb",
   {
-    metadata: {
-      name: "micro-runtime"
-    },
     subjects: [
       {
         kind: "ServiceAccount",
         name: runtimeServiceAccount.metadata.name,
-        namespace: "default"
+        namespace: "server"
       }
     ],
     roleRef: {
@@ -153,7 +169,8 @@ export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
   "runtime-role-binding",
   {
     metadata: {
-      name: "micro-runtime"
+      name: "micro-runtime",
+      namespace: "server",
     },
     roleRef: {
       apiGroup: "rbac.authorization.k8s.io",
@@ -175,7 +192,8 @@ export const spacesSecret = new k8s.core.v1.Secret(
   "spaces-secret",
   {
     metadata: {
-      name: "do-spaces"
+      name: "do-spaces",
+      namespace: "server",
     },
     stringData: {
       accessId: conf.require("spacesAccessId"),
@@ -320,6 +338,7 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
     {
       metadata: {
         name: `micro-${srv}`,
+        namespace: "server",
         labels: {
           name: srv,
           version: "latest",
@@ -439,7 +458,7 @@ export const networkService = new k8s.core.v1.Service(
   {
     metadata: {
       name: "micro-network",
-      namespace: "default",
+      namespace: "server",
       labels: {
         name: "network",
         version: "latest",
@@ -488,6 +507,7 @@ export const apiDeployment = new k8s.apps.v1.Deployment(
   {
     metadata: {
       name: "micro-api",
+      namespace: "server",
       labels: {
         name: "api",
         version: "latest",
@@ -549,7 +569,7 @@ export const apiDeployment = new k8s.apps.v1.Deployment(
                 },
                 {
                   name: "MICRO_PROXY",
-                  value: "micro-network.default.svc.cluster.local:8443"
+                  value: pulumi.interpolate`${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`
                 }
               ],
               args: ["service", "api"],
@@ -582,6 +602,7 @@ export const apiService = new k8s.core.v1.Service(
   {
     metadata: {
       name: "micro-api",
+      namespace: "server",
       labels: {
         name: "api",
         version: "latest",
@@ -611,6 +632,7 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
   {
     metadata: {
       name: "micro-proxy",
+      namespace: "server",
       labels: {
         name: "proxy",
         version: "latest",
@@ -668,7 +690,7 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
                 },
                 {
                   name: "MICRO_PROXY",
-                  value: "micro-network.default.svc.cluster.local:8443"
+                  value: pulumi.interpolate`${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`
                 }
               ],
               args: ["service", "proxy"],
@@ -701,6 +723,7 @@ export const proxyService = new k8s.core.v1.Service(
   {
     metadata: {
       name: "micro-proxy",
+      namespace: "server",
       labels: {
         name: "proxy",
         version: "latest",
@@ -726,6 +749,8 @@ export const proxyService = new k8s.core.v1.Service(
 );
 
 export default [
+  microNamespace,
+  serverNamespace,
   authDeployment,
   brokerDeployment,
   configDeployment,
