@@ -9,7 +9,7 @@ import { project, provider } from "../cluster";
 import { ObjectMeta } from "../crd/meta/v1";
 import { Output } from "@pulumi/pulumi";
 
-const image = "bentoogood/micro:pulumi";
+const image = "bentoogood/micro:pulumi-v2";
 const imagePullPolicy = "Always";
 const replicas = 2;
 
@@ -320,6 +320,9 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
     );
   }
 
+  // configure the runtime to use firecracker
+  if(srv === "runtime") env.push({name: "MICRO_RUNTIME_CLASS_NAME", value: "kata-fc"});
+
   if (srv !== "network") {
     // use the network as the proxy
     env.push({
@@ -427,19 +430,19 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
               {
                 name: "etcd-client-certs",
                 secret: {
-                  secretName: etcd.clientTLS.spec.secretName
+                  secretName: (etcd.clientTLS.spec as any).secretName
                 }
               },
               {
                 name: "nats-client-certs",
                 secret: {
-                  secretName: nats.clientTLS.spec.secretName
+                  secretName: (nats.clientTLS.spec as any).secretName
                 }
               },
               {
                 name: "cockroachdb-client-certs",
                 secret: {
-                  secretName: cockroach.clientTLS.spec.secretName,
+                  secretName: (cockroach.clientTLS.spec as any).secretName,
                   defaultMode: 0o600
                 }
               }
