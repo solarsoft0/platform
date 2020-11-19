@@ -12,7 +12,7 @@ config:
   digitalocean:token:
     secure: AAABAIrkcJfJvxhw1yl5gpi1rp+DXAteha8LcHD30HR9AHIka+sIk+TZuh/mRcElWul8DW782X/3fTSElhasgaSO96NDOeK1iAyg5ACuE9xiZsn4zZM7/NHqlJY2v6Sb
   gcp:project:
-    secure: AAABAI52keNXVAx8b5TjuAgdeBJBD5PzSO1m9IQNcfp7Xi2NbdCTgPE=
+    secure: AAABACuzDZ6i23h5tVnYxzVrxDWKJFOKeIZTXQvJWJ4LBo3I3XawEA==
   gcp:region: europe-west2
   kubernetes:kubeconfig: somewherethatdoesntexist
   m3o:analytics_db_password:
@@ -24,9 +24,9 @@ config:
   m3o:cloudflare-api-key:
     secure: AAABANe2U2EQguwoIedzsoDpBYDeW5mXqIUmviSW5Uh0nYrmMdBregUzFyYo+P3PiHnearSSQTBLKQO5ZtWqhcb9M9Zkl2cZ
   m3o:google_oauth_client_id:
-    secure: AAABAGspf0zNmkEBQZWTwFiIRLeTgwtVfttbQ3PnnsDbHGzg9sF79sAR8BGETOR6RFvgCgpT5e6xmhOcmIiGHUhmR1q0mFfglEEBMZpNhUswOsqh8752E+G+bI2siLi45SSM99NvKzU=
+    secure: AAABAFeQIULdQ+pEbqGjWyEQ1P6sbJxxBKu/uxc7+5W6dXL6nc2wq8T6mYM8JwRsgSTUJGyltpVF2/sXkgWUrmSZzjXbgYvpF5iyzbmaP5yFYQfR3nR0qFZVfhvekJ5+O4giatcJeCk=
   m3o:google_oauth_secret_id:
-    secure: AAABADBiPtG7kGlCbDniS5u2cfgQAtwjRsFGT3TiTOpuYhgaf+Ke6/p7gMAhg4c2ClEGcU07B6I=
+    secure: AAABAALkgl85qQEjsAXBV2uJNhBrGSPvwW9Xjamy0wy1NR+EI7SbeJrqj3a5BV3olBysmcqwP6o=
   m3o:grafana-admin-pass:
     secure: AAABAK6ppINAMIITIj5pdEVXhtNYNshRBOEmnnWn4qEYgbLPhkUoZHGPVDE2vO9Cs/U5hfV96qpo0v983uTYug==
   m3o:grafana_postgres_password:

@@ -68,7 +68,7 @@ class K8SExecProvider implements pulumi.dynamic.ResourceProvider {
       undefined,
       "",
       inputs.podSelector.toString()
-    ), {retries: 10, maxTimeout: 10000});
+    ), {retries: 25, maxTimeout: 30000});
 
     if (!pods.body.items.length) {
       throw new Error("no pods found for selector");

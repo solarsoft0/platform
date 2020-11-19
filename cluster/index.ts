@@ -32,7 +32,7 @@ export const nodePool = new ocean.KubernetesNodePool("node-pool", {
   name: "micro",
   clusterId: cluster.id,
   size: "s-8vcpu-16gb" as any,
-  minNodes: 3,
+  minNodes: 2,
   maxNodes: 6,
   autoScale: true,
 });
