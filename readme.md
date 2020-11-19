@@ -4,41 +4,54 @@ This is the Pulumi scripts to manage m3o.dev and m3o.org
 
 ## Generate the CA for the clusters cert issuer
 
+```
 openssl genrsa -out ca.key 4096
 openssl req -x509 -new -nodes -key ca.key -subj "/CN=m3o" -days 3650 -reqexts v3_req -extensions v3_ca -out ca.crt -config /usr/local/etc/
 cat ca.key | pulumi config set m3o:ca-key --secret
 cat ca.crt | pulumi config set m3o:ca-crt --secret
 rm ca.key ca.crt
+```
 
 ## Create the google oauth secrets
 
 TODO: Document these steps
 
+```
 pulumi config set google_oauth_client_id [value] --secret
 pulumi config set google_oauth_secret_id [value] --secret
+```
 
 ## Start the cluster
 
+```
 pulumi up
+```
 
 ## Update the DNS records
 
+```
 Download the kubeconfig and then set the API and Proxy DNS records to the values from: `kubectl get ingress`.
+```
 
 Set the wildcard DNS record to the IP from Tailscale. TODO: Document this step more.
 
 ## Set config for the analytics service
 
+```
 password=$(pulumi config get analytics_db_password)
 postgres="host=timescale.timescale user=analytics dbname=analytics sslmode=require password=$password"
 micro config set analytics.postgres \$postgres
+```
 
 ### Login using default credentials
 
+```
 micro login --username=admin --password=micro
+```
 
 # Set the required config
 
+```
 micro config set micro.alert.slack.token [slack api key]
 micro config set micro.alert.slack.enabled true
 micro config set micro.payments.stripe.api_key [stripe api key]
@@ -55,9 +68,11 @@ micro config set micro.platform.resource_limits.cpu 1000
 micro config set micro.platform.resource_limits.memory 1000
 micro config set micro.platform.resource_requests.cpu 1000
 micro config set micro.platform.resource_requests.memory 1000
+```
 
 ## Run the m3o services
 
+```
 micro run github.com/m3o/services/analytics;
 micro run github.com/m3o/services/alert;
 micro run github.com/m3o/services/customers;
@@ -68,6 +83,7 @@ micro run github.com/m3o/services/platform;
 micro run github.com/m3o/services/signup;
 micro run github.com/m3o/services/status;
 micro run github.com/m3o/services/subscriptions;
+```
 
 ## Configure Metabase
 
@@ -75,4 +91,6 @@ Go to data.m3o.sh and follow the steps on screen
 
 ## Connect to the cockroachdb cluster
 
+```
 kubectl exec ./cockroach sql --certs-dir=/certs --host=cockroach-cockroachdb.cockroach
+```
