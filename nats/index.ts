@@ -80,7 +80,6 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "nats-client-tls",
-      namespace: namespace.metadata.name
     },
     spec: {
       secretName: "nats-client-tls",
@@ -149,7 +148,7 @@ export const streamingChart = new k8s.helm.v3.Chart(
         },
         tls: {
           enabled: true,
-          secretName: (clientTLS.metadata as ObjectMeta).name,
+          secretName: (peerTLS.metadata as ObjectMeta).name,
           settings: {
             client_cert: "/etc/nats/certs/tls.crt",
             client_key: "/etc/nats/certs/tls.key",

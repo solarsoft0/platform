@@ -1,11 +1,11 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
+import * as ocean from "@pulumi/digitalocean";
 import * as k8s from "@pulumi/kubernetes";
-import { provider } from "../cluster";
+import { project, provider } from "../cluster";
 import * as crd from "../crd";
 
-const cf = new pulumi.Config("dply");
-const gcpConf = new pulumi.Config("gcp");
+const cf = new pulumi.Config("m3o");
+const conf = new pulumi.Config("digitalocean");
 
 export const namespace = new k8s.core.v1.Namespace(
   "timescale",
@@ -40,8 +40,10 @@ export const tls = new crd.certmanager.v1.Certificate(
   { provider }
 );
 
-export const bucket = new gcp.storage.Bucket("timescale-backups", {
-  location: gcpConf.require("region")
+export const bucket = new ocean.SpacesBucket("timescale-backups", {
+  region: "ams3",
+}, {
+  parent: project,
 });
 
 export const creds = new k8s.core.v1.Secret(
@@ -64,13 +66,13 @@ export const pgBackrest = new k8s.core.v1.Secret(
   {
     metadata: {
       namespace: namespace.metadata.name,
-      name: "timescale-pgbackrest"
     },
     stringData: {
       PGBACKREST_REPO1_S3_BUCKET: bucket.name,
-      PGBACKREST_REPO1_S3_REGION: gcpConf.require("region"),
-      PGBACKREST_REPO1_S3_KEY: cf.require("minio-access-key"),
-      PGBACKREST_REPO1_S3_KEY_SECRET: cf.require("minio-secret-key")
+      PGBACKREST_REPO1_S3_REGION: bucket.region as any,
+      PGBACKREST_REPO1_S3_KEY: conf.require("spacesAccessId"),
+      PGBACKREST_REPO1_S3_KEY_SECRET: conf.require("spacesSecretKey"),
+      PGBACKREST_REPO1_S3_ENDPOINT: "ams3.digitaloceanspaces.com",
     }
   },
   { provider }
@@ -94,16 +96,11 @@ export const chart = new k8s.helm.v3.Chart(
       },
       secretNames: {
         credentials: creds.metadata.name,
-        certificate: tls.spec.secretName
+        certificate: tls.spec.secretName,
+        pgbackrest: pgBackrest.metadata.name,
       },
       backup: {
-        enabled: false,
-        pgBackRest: {
-          "repo1-path": pulumi.interpolate`/${bucket.name}`,
-          "repo1-s3-endpoint": "minio.minio",
-          "repo1-s3-host": "minio.minio",
-          "repo1-s3-verify-tls": "n"
-        },
+        enabled: true,
         envFrom: [
           {
             secretRef: {
@@ -116,12 +113,10 @@ export const chart = new k8s.helm.v3.Chart(
         data: {
           enabled: true,
           size: "40Gi",
-          storageClass: "ssd"
         },
         wal: {
           enabled: true,
           size: "5Gi",
-          storageClass: "ssd"
         }
       },
       patroni: {

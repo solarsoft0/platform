@@ -7,18 +7,19 @@ import * as YAML from 'yamljs';
 
 const conf = new pulumi.Config("gcp");
 
-// -------- LOKI --------
 export const serviceAccount = new gcp.serviceaccount.Account("loki", {
-  accountId: "lokilogs"
+  accountId: "lokilogs",
+  project: conf.require("project"),
 });
 
 export const serviceAccountBinding = new gcp.projects.IAMBinding("loki-storage-admin-binding", {
   members: [pulumi.interpolate`serviceAccount:${serviceAccount.email}`],
-  role: "roles/storage.objectAdmin"
+  role: "roles/storage.objectAdmin",
+  project: conf.require("project"),
 }, { dependsOn: serviceAccount });
 
 export const serviceAccountKey = new gcp.serviceaccount.Key("loki-gcs", {
-  serviceAccountId: serviceAccount.id
+  serviceAccountId: serviceAccount.id,
 });
 
 export const creds = new k8s.core.v1.Secret(
@@ -38,8 +39,9 @@ export const creds = new k8s.core.v1.Secret(
   { provider }
 );
 
-export const bucket = new gcp.storage.Bucket("lokilogs", {
-  location: conf.require("region")
+export const bucket = new gcp.storage.Bucket("loki-bucket", {
+  location: conf.require("region"),
+  project: conf.require("project"),
 });
 
 export const chart = new k8s.helm.v3.Chart(
@@ -50,18 +52,35 @@ export const chart = new k8s.helm.v3.Chart(
     version: "2.0.2",
     fetchOpts: { repo: "https://grafana.github.io/loki/charts" },
     values: {
-      storage_config: {
-        boltdb_shipper: {
-          shared_store: "gcs"
+      config: {
+        auth_enabled: false,
+        server: {
+          http_listen_port: 3100
         },
-        gcs: {
-          bucket_name: bucket.name
-        }
-      },
-      schema_config: {
-        configs: [
-          {
-            configs: {
+        distributor: {
+          ring: {
+            kvstore: {
+              store: "memberlist"
+            }
+          }
+        },
+        ingester: {
+          lifecycler: {
+            ring: {
+              kvstore: {
+                store: "memberlist"
+              },
+              replication_factor: 1
+            },
+            final_sleep: "0s"
+          },
+          chunk_idle_period: "5m",
+          chunk_retain_period: "30s"
+        },
+        schema_config: {
+          configs: [
+            {
+              from: "2020-05-15",
               store: "boltdb-shipper",
               object_store: "gcs",
               schema: "v11",
@@ -70,23 +89,55 @@ export const chart = new k8s.helm.v3.Chart(
                 period: "24h"
               }
             }
+          ]
+        },
+        storage_config: {
+          boltdb_shipper: {
+            active_index_directory: "/data/index",
+            cache_location: "/data/index_cache",
+            resync_interval: "5s",
+            shared_store: "gcs"
+          },
+          gcs: {
+            bucket_name: bucket.name,
           }
-        ]
+        },
+        limits_config: {
+          enforce_metric_name: false,
+          reject_old_samples: true,
+          reject_old_samples_max_age: "168h"
+        },
       },
       env: [
         {
           name: "GOOGLE_APPLICATION_CREDENTIALS",
-          valueFrom: {
-            secretKeyRef: {
-              name: creds.metadata.name,
-              key: "gcsKeyJson"
-            }
-          }
+          value: '/creds/google'
         }
+      ],
+      extraVolumes: [
+        {
+          name: 'google-creds',
+          secret: {
+            secretName: creds.metadata.name,
+            items: [
+              {
+                key: 'gcsKeyJson',
+                path: 'google',
+              }
+            ]
+          },
+        },
+      ],
+      extraVolumeMounts: [
+        {
+          name: 'google-creds',
+          mountPath: '/creds',
+          readOnly: true,
+        },
       ]
-    }
+    },
   },
-  { provider, dependsOn: [serviceAccountBinding] }
+  { provider }
 );
 
 const datasource = YAML.stringify({

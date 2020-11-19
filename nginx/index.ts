@@ -1,14 +1,13 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
-import * as gcp from "@pulumi/gcp";
-import { provider } from "../cluster";
-import { tailscaleImage } from "../tailscale";
+import * as ocean from "@pulumi/digitalocean";
+import { provider, project } from "../cluster";
 import { letsEncryptCerts } from "../certmanager";
 import { ObjectMeta } from "../crd/meta/v1";
 import { proxyService, apiService } from "../micro";
 
-const conf = new pulumi.Config("gcp");
-const cf = new pulumi.Config("dply");
+const conf = new pulumi.Config("digitalocean");
+const cf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "nginx",
@@ -16,8 +15,10 @@ export const namespace = new k8s.core.v1.Namespace(
   { provider }
 );
 
-export const externalIP = new gcp.compute.Address("nginx-external-ip", {
-  region: conf.require("region")
+export const externalIP = new ocean.FloatingIp("external-ip",{
+  region: conf.require("region"),
+},{
+  parent: project
 });
 
 export const externalChart = new k8s.helm.v3.Chart(
@@ -34,7 +35,7 @@ export const externalChart = new k8s.helm.v3.Chart(
         ingressClass: "external",
         metrics: { enabled: true },
         service: {
-          loadBalancerIP: externalIP.address
+          loadBalancerIP: externalIP.ipAddress,
         },
         admissionWebhooks: { enabled: false }
       }
@@ -109,7 +110,7 @@ export const internalChart = new k8s.helm.v3.Chart(
         extraContainers: [
           {
             name: "nginx-ingress-tailscaled",
-            image: tailscaleImage.baseImageName,
+            image: 'ghcr.io/m3o/tailscale:latest',
             imagePullPolicy: "Always",
             volumeMounts: [
               {
@@ -159,8 +160,8 @@ export const grpcIngress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["*.m3o.sh"],
-          secretName: "wildcard-tls",
+          hosts: ["proxy.m3o.sh"],
+          secretName: "proxy-tls",
         }
       ],
       rules: [
@@ -170,7 +171,7 @@ export const grpcIngress = new k8s.networking.v1beta1.Ingress(
             paths: [
               {
                 path: "/",
-                pathType: "prefix",
+                pathType: "Prefix",
                 backend: {
                   serviceName: "micro-proxy",
                   servicePort: 8081,
@@ -198,18 +199,18 @@ export const httpIngress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["*.m3o.sh"],
-          secretName: "wildcard-tls",
+          hosts: ["api.m3o.sh"],
+          secretName: "api-tls",
         }
       ],
       rules: [
         {
-          host: "*.m3o.sh",
+          host: "api.m3o.sh",
           http: {
             paths: [
               {
                 path: "/",
-                pathType: "prefix",
+                pathType: "Prefix",
                 backend: {
                   serviceName: "micro-api",
                   servicePort: 8080,

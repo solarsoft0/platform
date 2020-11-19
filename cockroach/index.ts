@@ -1,14 +1,28 @@
 import * as k8s from "@pulumi/kubernetes";
-import { provider } from "../cluster";
 import { letsEncryptCerts } from "../certmanager";
+import * as ocean from "@pulumi/digitalocean";
 import { internalChart } from "../nginx";
 import { ObjectMeta } from "../crd/meta/v1";
+import * as pulumi from "@pulumi/pulumi";
+import { project, provider } from "../cluster";
 import * as crd from "../crd";
+
+const cf = new pulumi.Config("digitalocean");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cockroach",
   { metadata: { name: "cockroach" } },
   { provider }
+);
+
+export const bucket = new ocean.SpacesBucket(
+  "cockroach-backups",
+  {
+    region: "ams3"
+  },
+  {
+    parent: project
+  }
 );
 
 export const serverTLS = new crd.certmanager.v1.Certificate(
@@ -31,6 +45,7 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
       commonName: "node",
       dnsNames: [
         "*.cockroach-cockroachdb.cockroach.svc.cluster.local",
+        "cockroach-cockroachdb.cockroach",
         "*.cockroach-cockroachdb",
         "cockroach-cockroachdb"
       ],
@@ -44,10 +59,11 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
 );
 
 export const clientTLS = new crd.certmanager.v1.Certificate(
-  "cockroach-tls-client",
+  "cockroach-tls-c",
   {
     metadata: {
-      name: "cockroach-tls-client"
+      name: "cockroach-tls-client",
+      namespace: namespace.metadata.name
     },
     spec: {
       secretName: "cockroach-tls-client",
@@ -59,7 +75,34 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
         algorithm: "ECDSA",
         size: 256
       },
-      commonName: "node",
+      commonName: "root",
+      issuerRef: {
+        name: "ca",
+        kind: "ClusterIssuer"
+      }
+    }
+  },
+  { provider }
+);
+
+export const clientTLSDefault = new crd.certmanager.v1.Certificate(
+  "cockroach-tls-client-default",
+  {
+    metadata: {
+      name: "cockroach-tls-client",
+      namespace: "default"
+    },
+    spec: {
+      secretName: "cockroach-tls-client",
+      subject: {
+        organizations: ["m3o"]
+      },
+      isCA: false,
+      privateKey: {
+        algorithm: "ECDSA",
+        size: 256
+      },
+      commonName: "root",
       issuerRef: {
         name: "ca",
         kind: "ClusterIssuer"
@@ -119,8 +162,116 @@ export const chart = new k8s.helm.v3.Chart(
           clientRootSecret: peerTLS.spec.secretName,
           nodeSecret: serverTLS.spec.secretName
         }
+      }
+    }
+  },
+  { provider }
+);
+
+const tlsVolumes = [
+  {
+    name: "certs",
+    projected: {
+      sources: [
+        {
+          secret: {
+            name: clientTLS.spec.secretName,
+            items: [
+              {
+                key: "ca.crt",
+                path: "ca.crt",
+                mode: 256
+              },
+              {
+                key: "tls.crt",
+                path: "client.root.crt",
+                mode: 256
+              },
+              {
+                key: "tls.key",
+                path: "client.root.key",
+                mode: 256
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+];
+
+const appLabels = { app: "cockroach" };
+
+const debugDeployment = new k8s.apps.v1.Deployment(
+  "cockroach-debug",
+  {
+    metadata: { namespace: namespace.metadata.name },
+    spec: {
+      selector: { matchLabels: appLabels },
+      replicas: 1,
+      template: {
+        metadata: { labels: appLabels },
+        spec: {
+          containers: [
+            {
+              name: "cockroach-debug",
+              image: "cockroachdb/cockroach:v20.1.3",
+              command: ["/bin/bash", "-c", "--"],
+              args: ["while true; do sleep 30; done;"],
+              volumeMounts: [{ name: "certs", mountPath: "/certs" }]
+            }
+          ],
+          volumes: tlsVolumes
+        }
+      }
+    }
+  },
+  { provider }
+);
+
+const cronBackupJob = new k8s.batch.v1beta1.CronJob(
+  "cockroach-backup",
+  {
+    metadata: {
+      name: "cockroach-backup",
+      namespace: namespace.metadata.name
+    },
+    spec: {
+      jobTemplate: {
+        spec: {
+          template: {
+            metadata: { labels: appLabels },
+            spec: {
+              restartPolicy: "OnFailure",
+              containers: [
+                {
+                  name: "cockroach-debug",
+                  image: "cockroachdb/cockroach:v20.1.3",
+                  command: [
+                    "./cockroach",
+                    "sql",
+                    "--certs-dir=/certs",
+                    "--host=cockroach-cockroachdb.cockroach",
+                    "-e",
+                    pulumi.interpolate`BACKUP TO 's3://${
+                      bucket.name
+                    }/?AWS_ACCESS_KEY_ID=${cf.require(
+                      "spacesAccessId"
+                    )}&AWS_SECRET_ACCESS_KEY=${cf.require(
+                      "spacesSecretKey"
+                    )}&AWS_ENDPOINT=${bucket.name}.${
+                      bucket.region
+                    }.digitaloceanspaces.com';`
+                  ],
+                  volumeMounts: [{ name: "certs", mountPath: "/certs" }]
+                }
+              ],
+              volumes: tlsVolumes
+            }
+          }
+        }
       },
-      storage: { persistentVolume: { storageClass: "ssd" } }
+      schedule: "0 * * * *"
     }
   },
   { provider }
@@ -142,8 +293,8 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["*.m3o.sh"],
-          secretName: "wildcard-tls"
+          hosts: ["cockroach.m3o.sh"],
+          secretName: "cockroach-tls"
         }
       ],
       rules: [
@@ -153,7 +304,7 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
             paths: [
               {
                 path: "/",
-                pathType: "prefix",
+                pathType: "Prefix",
                 backend: {
                   serviceName: "cockroach-cockroachdb",
                   servicePort: 8080
@@ -168,4 +319,13 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
   { provider, dependsOn: internalChart }
 );
 
-export default [namespace, peerTLS, serverTLS, clientTLS, chart];
+export default [
+  namespace,
+  peerTLS,
+  serverTLS,
+  clientTLS,
+  clientTLSDefault,
+  chart,
+  debugDeployment,
+  cronBackupJob
+];

@@ -76,7 +76,7 @@ export const chart = new k8s.helm.v3.Chart(
     version: "4.12.2",
     fetchOpts: { repo: "https://charts.bitnami.com/bitnami" },
     values: {
-      statefulset: { replicaCount: 1 },
+      statefulset: { replicaCount: 3 },
       readinessProbe: { enabled: false },
       livenessProbe: { enabled: false },
       metrics: { enabled: true },

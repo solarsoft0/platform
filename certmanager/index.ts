@@ -3,7 +3,7 @@ import * as k8s from "@pulumi/kubernetes";
 import { provider } from '../cluster';
 import * as crd from '../crd';
 
-const conf = new pulumi.Config("dply");
+const conf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cert-manager",
@@ -79,7 +79,7 @@ export const ca = new k8s.core.v1.Secret(
 );
 
 export const caCerts = new crd.certmanager.v1.ClusterIssuer(
-  "cacerts",
+  "ca-certs",
   {
     metadata: {
       "name": "ca",
@@ -91,7 +91,7 @@ export const caCerts = new crd.certmanager.v1.ClusterIssuer(
       },
     },
   },
-  { provider, dependsOn: chart }
+  { provider, dependsOn: [chart, ca] }
 );
 
 export default [

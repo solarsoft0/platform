@@ -5,7 +5,7 @@ import { namespace as tsNamespace, default as ts } from '../timescale';
 import monitoring, { namespace } from '../monitoring';
 import { kubeconfig, provider } from '../cluster';
 
-const cf = new pulumi.Config("dply");
+const cf = new pulumi.Config("m3o");
 
 export const dbUser = new K8SExec(
   "promscale-user",
