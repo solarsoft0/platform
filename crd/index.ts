@@ -5,6 +5,7 @@
 export * from "./provider";
 
 // Export sub-modules:
+import * as monitoring from "./monitoring";
 import * as certmanager from "./certmanager";
 import * as types from "./types";
-export {certmanager, types};
+export { monitoring, types, certmanager };
