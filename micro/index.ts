@@ -320,9 +320,6 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
     );
   }
 
-  // configure the runtime to use firecracker
-  if(srv === "runtime") env.push({name: "MICRO_RUNTIME_CLASS_NAME", value: "kata-fc"});
-
   if (srv !== "network") {
     // use the network as the proxy
     env.push({
