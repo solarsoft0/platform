@@ -6,13 +6,12 @@ import { ObjectMeta } from "../crd/meta/v1";
 import * as pulumi from "@pulumi/pulumi";
 import { project, provider } from "../cluster";
 import * as crd from "../crd";
-import { serverNamespace } from "../micro";
 
 const cf = new pulumi.Config("digitalocean");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cockroach",
-  { metadata: { name: "cockroach" } },
+  { metadata: { name: "cockroach", labels: { prometheus: "infra" } } },
   { provider }
 );
 
@@ -64,7 +63,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "cockroach-tls-client",
-      namespace: "server",
+      namespace: "server"
     },
     spec: {
       secretName: "cockroach-tls-client",
@@ -155,13 +154,14 @@ export const chart = new k8s.helm.v3.Chart(
         budget: { maxUnavailable: 1 },
         podAntiAffinity: { type: "soft", weight: 100 }
       },
+      serviceMonitor: { enabled: true, labels: { prometheus: "infra" } },
       tls: {
         enabled: true,
         certs: {
           provided: true,
           tlsSecret: true,
-          clientRootSecret: peerTLS.spec.secretName,
-          nodeSecret: serverTLS.spec.secretName
+          clientRootSecret: (peerTLS.spec as any).secretName,
+          nodeSecret: (serverTLS.spec as any).secretName
         }
       }
     }
@@ -176,7 +176,7 @@ const tlsVolumes = [
       sources: [
         {
           secret: {
-            name: clientTLS.spec.secretName,
+            name: (clientTLS.spec as any).secretName,
             items: [
               {
                 key: "ca.crt",
@@ -186,6 +186,7 @@ const tlsVolumes = [
               {
                 key: "tls.crt",
                 path: "client.root.crt",
+
                 mode: 256
               },
               {

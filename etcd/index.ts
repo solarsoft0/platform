@@ -5,7 +5,7 @@ import * as crd from "../crd";
 
 export const namespace = new k8s.core.v1.Namespace(
   "etcd",
-  { metadata: { name: "etcd" } },
+  { metadata: { name: "etcd", labels: { prometheus: "infra" } } },
   { provider }
 );
 
@@ -84,7 +84,7 @@ export const chart = new k8s.helm.v3.Chart(
         enabled: true,
         serviceMonitor: {
           enabled: true,
-          selector: { prometheus: "true" },
+          selector: { prometheus: "infra" },
           scheme: "https",
           tlsConfig: {
             serverName: "etcd",

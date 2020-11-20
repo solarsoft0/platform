@@ -95,14 +95,14 @@ const promcrb = new k8s.rbac.v1.ClusterRoleBinding(
 );
 
 const prom = new crd.monitoring.v1.Prometheus(
-  "prometheus",
+  "prometheus-infra",
   {
-    metadata: { name: "prometheus", namespace: "monitoring" },
+    metadata: { name: "prometheus-infra", namespace: "monitoring" },
     spec: {
       serviceAccountName: "prometheus",
-      serviceMonitorSelector: { matchLabels: { prometheus: "true" } },
-      serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "true" } },
-      retention: "2d",
+      serviceMonitorSelector: { matchLabels: { prometheus: "infra" } },
+      serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+      retention: "7d",
       storage: {
         volumeClaimTemplate: {
           spec: { resources: { requests: { storage: "40Gi" } } }
