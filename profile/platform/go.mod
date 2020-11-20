@@ -1,4 +1,4 @@
-module github.com/m3o/platform/profile/production
+module github.com/m3o/platform/profile/platform
 
 go 1.15
 
