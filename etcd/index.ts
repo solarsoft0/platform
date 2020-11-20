@@ -85,10 +85,25 @@ export const chart = new k8s.helm.v3.Chart(
         serviceMonitor: {
           enabled: true,
           selector: { prometheus: "true" },
+          scheme: "https",
           tlsConfig: {
-            certFilename: "tls.crt",
-            certKeyFilename: "tls.key",
-            caFilename: "ca.crt"
+            serverName: "etcd",
+            ca: {
+              secret: {
+                name: (serverTLS.spec as any).secretName,
+                key: "ca.crt"
+              }
+            },
+            cert: {
+              secret: {
+                name: (serverTLS.spec as any).secretName,
+                key: "tls.crt"
+              }
+            },
+            keySecret: {
+              name: (serverTLS.spec as any).secretName,
+              key: "tls.key"
+            }
           }
         }
       },
