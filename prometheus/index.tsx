@@ -23,6 +23,26 @@ import * as crd from "../crd";
 //   },
 //   { provider, dependsOn: promscale },
 // );
+//
+
+// export const chart = new k8s.helm.v3.Chart(
+//   "prometheus",
+//   {
+//     namespace: namespace.metadata.name,
+//     chart: "kube-prometheus-stack",
+//     fetchOpts: { repo: "https://prometheus-community.github.io/helm-charts" },
+//     values: {
+//       namespaceOverride: "monitoring"
+//       // grafana: { enabled: false }
+//       // extraScrapeConfigs: `
+//       // remote_write:
+//       // - url: "http://promscale-connector.monitoring:9201/write"
+//       // remote_read:
+//       // - url: "http://promscale-connector.monitoring:9201/read"`
+//     }
+//   },
+//   { provider, dependsOn: promscale }
+// );
 
 // Has namespace of monitoring hardcoded
 const operator = new k8s.yaml.ConfigFile(
@@ -94,18 +114,37 @@ const promcrb = new k8s.rbac.v1.ClusterRoleBinding(
   { provider }
 );
 
+// One alertmanager is shared amongst N proms
+export const alertmanager = new crd.monitoring.v1.Alertmanager(
+  "alertmanager",
+  {
+    metadata: { namespace: "monitoring", name: "alertmanager" },
+    spec: { replicas: 2 }
+  },
+  { provider }
+);
+
 const prom = new crd.monitoring.v1.Prometheus(
   "prometheus-infra",
   {
     metadata: { name: "prometheus-infra", namespace: "monitoring" },
     spec: {
+      alerting: {
+        alertmanagers: [
+          { namespace: "monitoring", name: "alertmanager", port: "web" }
+        ]
+      },
       serviceAccountName: "prometheus",
       serviceMonitorSelector: { matchLabels: { prometheus: "infra" } },
       serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-      retention: "7d",
+      podMonitorSelector: { matchLabels: { prometheus: "infra" } },
+      podMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+      ruleSelector: { matchLabels: { prometheus: "infra" } },
+      ruleNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+      retention: "1d",
       storage: {
         volumeClaimTemplate: {
-          spec: { resources: { requests: { storage: "40Gi" } } }
+          spec: { resources: { requests: { storage: "20Gi" } } }
         }
       },
       securityContext: {
@@ -118,42 +157,55 @@ const prom = new crd.monitoring.v1.Prometheus(
   { provider, dependsOn: [promSA] }
 );
 
-// const datasource = YAML.stringify({
-//   apiVersion: 1,
-//   datasources: [
-//     {
-//       name: "Prometheus",
-//       type: "prometheus",
-//       access: "proxy",
-//       url: "http://prometheus-server",
-//     },
-//   ],
-// });
+export const svc = new k8s.core.v1.Service(
+  "prometheus-infra",
+  {
+    metadata: { namespace: "monitoring", name: "prometheus-infra" },
+    spec: {
+      ports: [
+        {
+          name: "http",
+          port: 80,
+          protocol: "TCP",
+          targetPort: "web"
+        }
+      ],
+      selector: {
+        prometheus: "prometheus-infra"
+      }
+    }
+  },
+  { provider }
+);
 
-// export const configMap = new k8s.core.v1.ConfigMap(
-//   "prometheus-grafana",
-//   {
-//     metadata: {
-//       name: "prometheus-grafana",
-//       namespace: namespace.metadata.name,
-//       labels: {
-//         app: "prometheus",
-//         grafana_datasource: "1",
-//       },
-//     },
-//     data: {
-//       "prometheus-datasource.yaml": datasource,
-//     },
-//   },
-//   { provider, dependsOn: chart },
-// );
+const datasource = YAML.stringify({
+  apiVersion: 1,
+  datasources: [
+    {
+      name: "Prometheus Infrastructure",
+      type: "prometheus",
+      access: "proxy",
+      url: "http://prometheus-infra"
+    }
+  ]
+});
 
-export default [
-  operator,
-  prom,
-  promSA,
-  promRBAC,
-  promcrb
+export const configMap = new k8s.core.v1.ConfigMap(
+  "prometheus-grafana",
+  {
+    metadata: {
+      name: "prometheus-grafana",
+      namespace: namespace.metadata.name,
+      labels: {
+        app: "prometheus",
+        grafana_datasource: "1"
+      }
+    },
+    data: {
+      "prometheus-datasource.yaml": datasource
+    }
+  },
+  { provider }
+);
 
-  // configMap,
-];
+export default [operator, prom, promSA, promRBAC, promcrb, configMap];

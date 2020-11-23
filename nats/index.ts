@@ -6,7 +6,7 @@ import { serverNamespace } from "../micro";
 
 export const namespace = new k8s.core.v1.Namespace(
   "nats",
-  { metadata: { name: "nats" } },
+  { metadata: { name: "nats", labels: { prometheus: "infra" } } },
   { provider }
 );
 
@@ -31,7 +31,7 @@ export const peerTLS = new crd.certmanager.v1.Certificate(
         "nats.nats.svc.cluster.local",
         "*.nats.nats.svc",
         "nats.nats",
-        "nats",
+        "nats"
       ],
       commonName: "nats",
       issuerRef: {
@@ -65,7 +65,7 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
         "nats.nats.svc.cluster.local",
         "*.nats.nats.svc",
         "nats.nats",
-        "nats",
+        "nats"
       ],
       issuerRef: {
         name: "ca",
@@ -81,7 +81,7 @@ export const clientTLS = new crd.certmanager.v1.Certificate(
   {
     metadata: {
       name: "nats-client-tls",
-      namespace: "server",
+      namespace: "server"
     },
     spec: {
       secretName: "nats-client-tls",
@@ -111,6 +111,15 @@ export const chart = new k8s.helm.v3.Chart(
     fetchOpts: { repo: "https://nats-io.github.io/k8s/helm/charts" },
     version: "0.5.6",
     values: {
+      exporter: {
+        enabled: true,
+        image: "synadia/prometheus-nats-exporter:0.5.0",
+        pullPolicy: "IfNotPresent",
+        serviceMonitor: {
+          enabled: true,
+          labels: { prometheus: "infra" }
+        }
+      },
       nats: {
         tls: {
           secret: { name: (serverTLS.metadata as ObjectMeta).name },
@@ -126,7 +135,7 @@ export const chart = new k8s.helm.v3.Chart(
           secret: { name: (peerTLS.metadata as ObjectMeta).name },
           ca: "ca.crt",
           cert: "tls.crt",
-          key: "tls.key",
+          key: "tls.key"
         }
       },
       metrics: { enabled: true }

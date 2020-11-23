@@ -154,7 +154,9 @@ export const chart = new k8s.helm.v3.Chart(
         budget: { maxUnavailable: 1 },
         podAntiAffinity: { type: "soft", weight: 100 }
       },
-      serviceMonitor: { enabled: true, labels: { prometheus: "infra" } },
+      service: {
+        public: { labels: { prometheus: "infra", cluster: "micro" } }
+      },
       tls: {
         enabled: true,
         certs: {
@@ -164,6 +166,30 @@ export const chart = new k8s.helm.v3.Chart(
           nodeSecret: (serverTLS.spec as any).secretName
         }
       }
+    }
+  },
+  { provider }
+);
+
+export const serviceMonitor = new crd.monitoring.v1.ServiceMonitor(
+  "cockroach",
+  {
+    metadata: {
+      namespace: namespace.metadata.name,
+      labels: { prometheus: "infra" }
+    },
+    spec: {
+      selector: { matchLabels: { prometheus: "infra" } },
+      namespaceSelector: { matchNames: ["cockroach"] },
+      targetLabels: ["cluster"],
+      endpoints: [
+        {
+          port: "http",
+          path: "/_status/vars",
+          scheme: "https",
+          tlsConfig: { insecureSkipVerify: true }
+        }
+      ]
     }
   },
   { provider }
