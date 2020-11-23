@@ -45,6 +45,6 @@ config:
     secure: AAABAHfm61O1ICcWJDgVlL6TKxX7xDmq41U/ekQs9/X5xW5zT0IlLtKPIooU4IPuoIWmiJJx1zyiTPc57HQsvw==
   m3o:promscale_postgres_password:
     secure: AAABAKC1qvE2EfxERCygCZajXWdPVzVWr26wSEvERVFKB9nizbns7wuRvB6iH+VgmLfECABkp8PDvpJ5dQUrgQ==
-  m3o:proxy-hosts: proxy.production.m3o.com,proxy.m3o.com
+  m3o:proxy-hosts: proxy.production.m3o.com,proxy.m3o.com,proxy.m3o.dev
   m3o:tailscale_access_key:
     secure: AAABAH+qFXfTpv8VEIneUqmJYilZfVcatmaGY1aq2N0q+T1x0FLvsHOP/l0Q5Bfk3lXkv0wB04JEVlruaMo=
