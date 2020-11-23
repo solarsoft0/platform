@@ -109,7 +109,7 @@ export const chart = new k8s.helm.v3.Chart(
     namespace: namespace.metadata.name,
     chart: "nats",
     fetchOpts: { repo: "https://nats-io.github.io/k8s/helm/charts" },
-    version: "0.5.6",
+    version: "0.7.2",
     values: {
       exporter: {
         enabled: true,
@@ -150,8 +150,15 @@ export const streamingChart = new k8s.helm.v3.Chart(
     namespace: namespace.metadata.name,
     chart: "stan",
     fetchOpts: { repo: "https://nats-io.github.io/k8s/helm/charts" },
-    version: "0.5.6",
+    version: "0.7.2",
     values: {
+      exporter: {
+        enabled: true,
+        serviceMonitor: {
+          enabled: true
+          // labels: { prometheus: "infra" }
+        }
+      },
       stan: {
         replicas: 3,
         nats: {
