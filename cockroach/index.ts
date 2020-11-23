@@ -8,6 +8,7 @@ import { project, provider } from "../cluster";
 import * as crd from "../crd";
 
 const cf = new pulumi.Config("digitalocean");
+const conf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cockroach",
@@ -321,13 +322,13 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["cockroach.m3o.sh"],
+          hosts: ["cockroach." + conf.require("internal-host")],
           secretName: "cockroach-tls"
         }
       ],
       rules: [
         {
-          host: "cockroach.m3o.sh",
+          host: "cockroach." + conf.require("internal-host"),
           http: {
             paths: [
               {

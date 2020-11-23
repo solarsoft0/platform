@@ -116,13 +116,13 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["data.m3o.sh"],
+          hosts: ["data." + cf.require("internal-host")],
           secretName: "metabase-tls"
         }
       ],
       rules: [
         {
-          host: "data.m3o.sh",
+          host: "data." + cf.require("internal-host"),
           http: {
             paths: [
               {

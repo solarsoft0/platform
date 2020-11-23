@@ -87,7 +87,7 @@ export const chart = new k8s.helm.v3.Chart(
         }
       },
       "grafana.ini": {
-        server: { root_url: "https://grafana.m3o.sh/" },
+        server: { root_url: "https://grafana." + cf.require("internal-host") },
         "auth.google": {
           enabled: true,
           client_id: cf.require("google_oauth_client_id"),
@@ -119,13 +119,13 @@ export const ingress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["grafana.m3o.sh"],
+          hosts: ["grafana." + cf.require("internal-host")],
           secretName: "grafana-tls"
         }
       ],
       rules: [
         {
-          host: "grafana.m3o.sh",
+          host: "grafana." + cf.require("internal-host"),
           http: {
             paths: [
               {
