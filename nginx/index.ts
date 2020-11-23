@@ -161,27 +161,25 @@ export const grpcIngress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["proxy.m3o.sh"],
-          secretName: "proxy-tls",
+          hosts: cf.require("proxy-hosts").split(","),
+          secretName: "tls-proxy",
         }
       ],
-      rules: [
-        {
-          host: "proxy.m3o.sh",
-          http: {
-            paths: [
-              {
-                path: "/",
-                pathType: "Prefix",
-                backend: {
-                  serviceName: "micro-proxy",
-                  servicePort: 8081,
-                },
+      rules: cf.require("proxy-hosts").split(",").map(host => ({
+        host,
+        http: {
+          paths: [
+            {
+              path: "/",
+              pathType: "Prefix",
+              backend: {
+                serviceName: "micro-proxy",
+                servicePort: 8081,
               },
-            ],
-          },
-        },
-      ],
+            },
+          ],
+        }
+      })),
     },
   },
   { provider, dependsOn: [externalChart, proxyService] },
@@ -201,27 +199,25 @@ export const httpIngress = new k8s.networking.v1beta1.Ingress(
     spec: {
       tls: [
         {
-          hosts: ["api.m3o.sh"],
-          secretName: "api-tls",
+          hosts: cf.require("api-hosts").split(","),
+          secretName: "tls-api",
         }
       ],
-      rules: [
-        {
-          host: "api.m3o.sh",
-          http: {
-            paths: [
-              {
-                path: "/",
-                pathType: "Prefix",
-                backend: {
-                  serviceName: "micro-api",
-                  servicePort: 8080,
-                },
+      rules: cf.require("api-hosts").split(",").map(host => ({
+        host,
+        http: {
+          paths: [
+            {
+              path: "/",
+              pathType: "Prefix",
+              backend: {
+                serviceName: "micro-api",
+                servicePort: 8080,
               },
-            ],
-          },
-        },
-      ],
+            },
+          ],
+        }
+      })),
     },
   },
   { provider, dependsOn: [externalChart, apiService] },
