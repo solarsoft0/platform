@@ -71,73 +71,38 @@ export const creds = new k8s.core.v1.Secret(
   { provider }
 );
 
-// <<<<<<< HEAD
-// export const chart = new k8s.helm.v3.Chart(
-//   "grafana",
-//   {
-//     namespace: namespace.metadata.name,
-//     chart: "grafana",
-//     fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
-//     values: {
-//       envFromSecret: creds.metadata.name,
-//       adminUser: "admin",
-//       adminPassword: cf.require("grafana-admin-pass"),
-//       sidecar: {
-//         datasources: {
-//           enabled: true
-//         }
-//       },
-//       "grafana.ini": {
-//         server: { root_url: "https://grafana." + cf.require("internal-host") },
-//         "auth.google": {
-//           enabled: true,
-//           client_id: cf.require("google_oauth_client_id"),
-//           client_secret: cf.require("google_oauth_secret_id"),
-//           scopes:
-//             "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-//           auth_url: "https://accounts.google.com/o/oauth2/auth",
-//           token_url: "https://accounts.google.com/o/oauth2/token",
-//           allow_sign_up: true
-//         }
-//       }
-//     }
-//   },
-//   { provider, dependsOn: [...timescale, dbAccess] }
-// );
-// =======
-// export const chart = new k8s.helm.v3.Chart(
-//   "grafana",
-//   {
-//     namespace: namespace.metadata.name,
-//     chart: "grafana",
-//     fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
-//     values: {
-//       envFromSecret: creds.metadata.name,
-//       adminUser: "admin",
-//       adminPassword: cf.require("grafana-admin-pass"),
-//       sidecar: {
-//         datasources: {
-//           enabled: true
-//         }
-//       },
-//       "grafana.ini": {
-//         server: { root_url: "https://grafana.m3o.sh/" },
-//         "auth.google": {
-//           enabled: true,
-//           client_id: cf.require("google_oauth_client_id"),
-//           client_secret: cf.require("google_oauth_secret_id"),
-//           scopes:
-//             "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-//           auth_url: "https://accounts.google.com/o/oauth2/auth",
-//           token_url: "https://accounts.google.com/o/oauth2/token",
-//           allow_sign_up: true
-//         }
-//       }
-//     }
-//   },
-//   { provider, dependsOn: [...timescale, dbAccess] }
-// );
-// >>>>>>> baddb2b (Grafana as part of promstack)
+export const chart = new k8s.helm.v3.Chart(
+  "grafana",
+  {
+    namespace: namespace.metadata.name,
+    chart: "grafana",
+    fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
+    values: {
+      envFromSecret: creds.metadata.name,
+      adminUser: "admin",
+      adminPassword: cf.require("grafana-admin-pass"),
+      sidecar: {
+        datasources: {
+          enabled: true
+        }
+      },
+      "grafana.ini": {
+        server: { root_url: "https://grafana." + cf.require("internal-host") },
+        "auth.google": {
+          enabled: true,
+          client_id: cf.require("google_oauth_client_id"),
+          client_secret: cf.require("google_oauth_secret_id"),
+          scopes:
+            "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+          auth_url: "https://accounts.google.com/o/oauth2/auth",
+          token_url: "https://accounts.google.com/o/oauth2/token",
+          allow_sign_up: true
+        }
+      }
+    }
+  },
+  { provider, dependsOn: [...timescale, dbAccess] }
+);
 
 export const ingress = new k8s.networking.v1beta1.Ingress(
   "grafana-ingress",

@@ -1,76 +1,10 @@
 import * as k8s from "@pulumi/kubernetes";
-import * as pulumi from "@pulumi/pulumi";
 import { provider } from "../cluster";
 import { namespace } from "../monitoring";
-import { creds } from "../grafana";
-import promscale from "../promscale";
-// import * as YAML from "yamljs";
+import * as YAML from "yamljs";
 import * as crd from "../crd";
 
-const cf = new pulumi.Config("m3o");
-
-// export const chart = new k8s.helm.v3.Chart(
-//   "prometheus",
-//   {
-//     namespace: namespace.metadata.name,
-//     chart: "prometheus",
-//     repo: "stable",
-//     values: {
-//       alertmanager: { enabled: false },
-//       pushgateway: { enabled: false },
-//       extraScrapeConfigs: `
-// remote_write:
-//   - url: "http://promscale-connector.monitoring:9201/write"
-// remote_read:
-//   - url: "http://promscale-connector.monitoring:9201/read"`
-//     }
-//   },
-//   { provider, dependsOn: promscale },
-// );
-//
-
-// export const chart = new k8s.helm.v3.Chart(
-//   "prometheus",
-//   {
-//     namespace: namespace.metadata.name,
-//     chart: "kube-prometheus-stack",
-//     fetchOpts: { repo: "https://prometheus-community.github.io/helm-charts" },
-//     values: {
-//       namespaceOverride: "monitoring",
-//       grafana: {
-//         envFromSecret: creds.metadata.name,
-//         adminUser: "admin",
-//         adminPassword: cf.require("grafana-admin-pass"),
-//         sidecar: {
-//           datasources: {
-//             enabled: true
-//           }
-//         },
-//         "grafana.ini": {
-//           server: { root_url: "https://grafana.m3o.sh/" },
-//           "auth.google": {
-//             enabled: true,
-//             client_id: cf.require("google_oauth_client_id"),
-//             client_secret: cf.require("google_oauth_secret_id"),
-//             scopes:
-//               "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-//             auth_url: "https://accounts.google.com/o/oauth2/auth",
-//             token_url: "https://accounts.google.com/o/oauth2/token",
-//             allow_sign_up: true
-//           }
-//         }
-//       }
-//       // extraScrapeConfigs: `
-//       // remote_write:
-//       // - url: "http://promscale-connector.monitoring:9201/write"
-//       // remote_read:
-//       // - url: "http://promscale-connector.monitoring:9201/read"`
-//     }
-//   },
-//   { provider, dependsOn: promscale }
-// );
-
-// Has namespace of monitoring hardcoded
+// // Has namespace of monitoring hardcoded
 // const operator = new k8s.yaml.ConfigFile(
 //   "prometheus-operator",
 //   {
@@ -140,15 +74,65 @@ const cf = new pulumi.Config("m3o");
 //   { provider }
 // );
 
-// // One alertmanager is shared amongst N proms
-// export const alertmanager = new crd.monitoring.v1.Alertmanager(
-//   "alertmanager",
+// One alertmanager is shared amongst N proms
+export const alertmanager = new crd.monitoring.v1.Alertmanager(
+  "alertmanager",
+  {
+    metadata: { namespace: "monitoring", name: "alertmanager" },
+    spec: { replicas: 2 }
+  },
+  { provider }
+);
+
+// export const nodeExporterChart = new k8s.helm.v3.Chart(
+//   "node-exporter",
 //   {
-//     metadata: { namespace: "monitoring", name: "alertmanager" },
-//     spec: { replicas: 2 }
+//     chart: "prometheus-node-exporter",
+//     fetchOpts: {
+//       repo: "https://prometheus-community.github.io/helm-charts"
+//     },
+//     namespace: namespace.metadata.name,
+//     values: {
+//       namespaceOverride: "monitoring",
+//       prometheus: {
+//         monitor: { enabled: true, additionalLabels: { prometheus: "infra" } }
+//       }
+//     }
 //   },
 //   { provider }
 // );
+
+export const exporterChart = new k8s.helm.v3.Chart(
+  "exporters",
+  {
+    chart: "kube-prometheus-stack",
+    fetchOpts: {
+      repo: "https://prometheus-community.github.io/helm-charts"
+    },
+    namespace: namespace.metadata.name,
+    values: {
+      namespaceOverride: "monitoring",
+      defaultRules: { create: false },
+      prometheusOperator: {
+        tls: { enabled: false },
+        admissionWebhooks: { enabled: false }
+      },
+      grafana: {
+        enabled: false
+      },
+      alertmanager: {
+        enabled: false
+      },
+      prometheus: {
+        enabled: false
+      },
+      kubeScheduler: { enabled: false },
+      kubeEtcd: { enabled: false },
+      kubeControllerManager: { enabled: false }
+    }
+  },
+  { provider }
+);
 
 // const prom = new crd.monitoring.v1.Prometheus(
 //   "prometheus-infra",

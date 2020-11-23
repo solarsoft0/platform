@@ -11,15 +11,19 @@ const cf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "nginx",
-  { metadata: { name: "nginx" } },
+  { metadata: { name: "nginx", labels: { prometheus: "infra" } } },
   { provider }
 );
 
-export const externalIP = new ocean.FloatingIp("external-ip",{
-  region: conf.require("region"),
-},{
-  parent: project
-});
+export const externalIP = new ocean.FloatingIp(
+  "external-ip",
+  {
+    region: conf.require("region")
+  },
+  {
+    parent: project
+  }
+);
 
 export const externalChart = new k8s.helm.v3.Chart(
   "nginx",
@@ -33,9 +37,15 @@ export const externalChart = new k8s.helm.v3.Chart(
     values: {
       controller: {
         ingressClass: "external",
-        metrics: { enabled: true },
+        metrics: {
+          enabled: true,
+          serviceMonitor: {
+            enabled: true,
+            additionalLabels: { prometheus: "infra" }
+          }
+        },
         service: {
-          loadBalancerIP: externalIP.ipAddress,
+          loadBalancerIP: externalIP.ipAddress
         },
         admissionWebhooks: { enabled: false }
       }
@@ -63,20 +73,18 @@ export const pvc = new k8s.core.v1.PersistentVolumeClaim(
   {
     metadata: {
       name: "tailscale-nginx-ingress-state",
-      namespace: namespace.metadata.name,
+      namespace: namespace.metadata.name
     },
     spec: {
-      accessModes: [
-        'ReadWriteOnce',
-      ],
+      accessModes: ["ReadWriteOnce"],
       resources: {
         requests: {
           storage: "1Gi"
-        },
-      },
-    },
+        }
+      }
+    }
   },
-  { provider },
+  { provider }
 );
 
 export const internalChart = new k8s.helm.v3.Chart(
@@ -91,10 +99,16 @@ export const internalChart = new k8s.helm.v3.Chart(
     values: {
       controller: {
         updateStrategy: {
-          type: "Recreate",
+          type: "Recreate"
         },
         ingressClass: "internal",
-        metrics: { enabled: true },
+        metrics: {
+          enabled: true,
+          serviceMonitor: {
+            enabled: true,
+            additionalLabels: { prometheus: "infra" }
+          }
+        },
         service: {
           type: "ClusterIP"
         },
@@ -104,13 +118,13 @@ export const internalChart = new k8s.helm.v3.Chart(
             name: "tailscale-state",
             persistentVolumeClaim: {
               claimName: "tailscale-nginx-ingress-state"
-            },
-          },
+            }
+          }
         ],
         extraContainers: [
           {
             name: "nginx-ingress-tailscaled",
-            image: 'ghcr.io/m3o/tailscale:latest',
+            image: "ghcr.io/m3o/tailscale:latest",
             imagePullPolicy: "Always",
             volumeMounts: [
               {
@@ -155,34 +169,38 @@ export const grpcIngress = new k8s.networking.v1beta1.Ingress(
       annotations: {
         "kubernetes.io/ingress.class": "external",
         "nginx.ingress.kubernetes.io/backend-protocol": "GRPC",
-        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-      },
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta)
+          .name!
+      }
     },
     spec: {
       tls: [
         {
           hosts: cf.require("proxy-hosts").split(","),
-          secretName: "tls-proxy",
+          secretName: "tls-proxy"
         }
       ],
-      rules: cf.require("proxy-hosts").split(",").map(host => ({
-        host,
-        http: {
-          paths: [
-            {
-              path: "/",
-              pathType: "Prefix",
-              backend: {
-                serviceName: "micro-proxy",
-                servicePort: 8081,
-              },
-            },
-          ],
-        }
-      })),
-    },
+      rules: cf
+        .require("proxy-hosts")
+        .split(",")
+        .map(host => ({
+          host,
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "Prefix",
+                backend: {
+                  serviceName: "micro-proxy",
+                  servicePort: 8081
+                }
+              }
+            ]
+          }
+        }))
+    }
   },
-  { provider, dependsOn: [externalChart, proxyService] },
+  { provider, dependsOn: [externalChart, proxyService] }
 );
 
 export const httpIngress = new k8s.networking.v1beta1.Ingress(
@@ -193,34 +211,38 @@ export const httpIngress = new k8s.networking.v1beta1.Ingress(
       namespace: "server",
       annotations: {
         "kubernetes.io/ingress.class": "external",
-        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta).name!,
-      },
+        "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as ObjectMeta)
+          .name!
+      }
     },
     spec: {
       tls: [
         {
           hosts: cf.require("api-hosts").split(","),
-          secretName: "tls-api",
+          secretName: "tls-api"
         }
       ],
-      rules: cf.require("api-hosts").split(",").map(host => ({
-        host,
-        http: {
-          paths: [
-            {
-              path: "/",
-              pathType: "Prefix",
-              backend: {
-                serviceName: "micro-api",
-                servicePort: 8080,
-              },
-            },
-          ],
-        }
-      })),
-    },
+      rules: cf
+        .require("api-hosts")
+        .split(",")
+        .map(host => ({
+          host,
+          http: {
+            paths: [
+              {
+                path: "/",
+                pathType: "Prefix",
+                backend: {
+                  serviceName: "micro-api",
+                  servicePort: 8080
+                }
+              }
+            ]
+          }
+        }))
+    }
   },
-  { provider, dependsOn: [externalChart, apiService] },
+  { provider, dependsOn: [externalChart, apiService] }
 );
 
 export default [
@@ -229,5 +251,5 @@ export default [
   externalIP,
   pvc,
   grpcIngress,
-  httpIngress,
+  httpIngress
 ];

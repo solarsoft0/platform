@@ -1,14 +1,14 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import { namespace as tsNamespace, default as ts } from '../timescale';
-import { kubeconfig, provider } from '../cluster';
-import { K8SExec } from '../exec';
+import { namespace as tsNamespace, default as ts } from "../timescale";
+import { kubeconfig, provider } from "../cluster";
+import { K8SExec } from "../exec";
 
 const conf = new pulumi.Config();
 
 export const namespace = new k8s.core.v1.Namespace(
   "monitoring",
-  { metadata: { name: "monitoring" } },
+  { metadata: { name: "monitoring", labels: { prometheus: "infra" } } },
   { provider }
 );
 
@@ -23,7 +23,6 @@ export const database = new K8SExec(
   },
   { dependsOn: ts }
 );
-
 
 export const dbUser = new K8SExec(
   "analytics-user",
@@ -59,9 +58,4 @@ export const dbAccessAnalytics = new K8SExec(
   { dependsOn: [...ts, dbUser] }
 );
 
-export default [
-  namespace,
-  database,
-  dbUser,
-  dbAccessAnalytics,
-]
+export default [namespace, database, dbUser, dbAccessAnalytics];

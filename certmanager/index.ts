@@ -1,20 +1,23 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
-import { provider } from '../cluster';
-import * as crd from '../crd';
+import { provider } from "../cluster";
+import * as crd from "../crd";
 
 const conf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cert-manager",
-  { metadata: { name: "cert-manager" } },
+  { metadata: { name: "cert-manager", labels: { prometheus: "infra" } } },
   { provider }
 );
 
 export const cfAPIKey = new k8s.core.v1.Secret(
   "cloudflare-api-key",
   {
-    metadata: { namespace: namespace.metadata.name, name: "cloudflare-api-key" },
+    metadata: {
+      namespace: namespace.metadata.name,
+      name: "cloudflare-api-key"
+    },
     stringData: { cloudflare: conf.require("cloudflare-api-key") }
   },
   { provider }
@@ -27,7 +30,16 @@ export const chart = new k8s.helm.v3.Chart(
     chart: "cert-manager",
     version: "v1.0.3",
     fetchOpts: { repo: "https://charts.jetstack.io" },
-    values: { installCRDs: true }
+    values: {
+      installCRDs: true,
+      prometheus: {
+        servicemonitor: {
+          enabled: true,
+          prometheusInstance: "infra",
+          labels: { prometheus: "infra" }
+        }
+      }
+    }
   },
   { provider, dependsOn: cfAPIKey }
 );
@@ -36,8 +48,8 @@ export const letsEncryptCerts = new crd.certmanager.v1.ClusterIssuer(
   "letsencryptcerts",
   {
     metadata: {
-      "name": "letsencrypt",
-      "namespace": namespace.metadata.name,
+      name: "letsencrypt",
+      namespace: namespace.metadata.name
     },
     spec: {
       acme: {
@@ -46,22 +58,24 @@ export const letsEncryptCerts = new crd.certmanager.v1.ClusterIssuer(
         privateKeySecretRef: {
           name: "letsencrypt"
         },
-        solvers: [{
-          dns01: {
-            cloudflare: {
-              email: "ben@micro.mu",
-              apiTokenSecretRef: {
-                name: cfAPIKey.metadata.name,
-                key: "cloudflare",
-              },
-            },
-          },
-        }],
-      },
-    },
+        solvers: [
+          {
+            dns01: {
+              cloudflare: {
+                email: "ben@micro.mu",
+                apiTokenSecretRef: {
+                  name: cfAPIKey.metadata.name,
+                  key: "cloudflare"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
   },
   { provider, dependsOn: chart }
-)
+);
 
 export const ca = new k8s.core.v1.Secret(
   "ca",
@@ -82,23 +96,16 @@ export const caCerts = new crd.certmanager.v1.ClusterIssuer(
   "ca-certs",
   {
     metadata: {
-      "name": "ca",
-      "namespace": namespace.metadata.name,
+      name: "ca",
+      namespace: namespace.metadata.name
     },
     spec: {
       ca: {
-        secretName: "ca",
-      },
-    },
+        secretName: "ca"
+      }
+    }
   },
   { provider, dependsOn: [chart, ca] }
 );
 
-export default [
-  namespace,
-  cfAPIKey,
-  chart,
-  letsEncryptCerts,
-  ca,
-  caCerts,
-];
+export default [namespace, cfAPIKey, chart, letsEncryptCerts, ca, caCerts];
