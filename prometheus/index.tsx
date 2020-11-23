@@ -24,7 +24,7 @@ export const operatorChart = new k8s.helm.v3.Chart(
     namespace: namespace.metadata.name,
     values: {
       namespaceOverride: "monitoring",
-      defaultRules: { create: false },
+      defaultRules: { create: true },
       prometheusOperator: {
         tls: { enabled: false },
         admissionWebhooks: { enabled: false }
@@ -33,10 +33,10 @@ export const operatorChart = new k8s.helm.v3.Chart(
         enabled: false
       },
       alertmanager: {
-        enabled: false
+        enabled: true
       },
       prometheus: {
-        enabled: false
+        enabled: true
       },
       kubeScheduler: { enabled: false },
       kubeEtcd: { enabled: false },
@@ -46,38 +46,38 @@ export const operatorChart = new k8s.helm.v3.Chart(
   { provider }
 );
 
-const prom = new crd.monitoring.v1.Prometheus(
-  "prometheus-infra",
-  {
-    metadata: { name: "prometheus-infra", namespace: "monitoring" },
-    spec: {
-      alerting: {
-        alertmanagers: [
-          { namespace: "monitoring", name: "alertmanager", port: "web" }
-        ]
-      },
-      serviceAccountName: "prometheus",
-      serviceMonitorSelector: { matchLabels: { prometheus: "infra" } },
-      serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-      podMonitorSelector: { matchLabels: { prometheus: "infra" } },
-      podMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-      ruleSelector: { matchLabels: { prometheus: "infra" } },
-      ruleNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-      retention: "1d",
-      storage: {
-        volumeClaimTemplate: {
-          spec: { resources: { requests: { storage: "20Gi" } } }
-        }
-      },
-      securityContext: {
-        fsGroup: 2000,
-        runAsNonRoot: true,
-        runAsUser: 1000
-      }
-    }
-  },
-  { provider, dependsOn: [operatorChart] }
-);
+// export const prom = new crd.monitoring.v1.Prometheus(
+//   "prometheus-infra",
+//   {
+//     metadata: { name: "prometheus-infra", namespace: "monitoring" },
+//     spec: {
+//       alerting: {
+//         alertmanagers: [
+//           { namespace: "monitoring", name: "alertmanager", port: "web" }
+//         ]
+//       },
+//       serviceAccountName: "prometheus",
+//       serviceMonitorSelector: { matchLabels: { prometheus: "infra" } },
+//       serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+//       podMonitorSelector: { matchLabels: { prometheus: "infra" } },
+//       podMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+//       ruleSelector: { matchLabels: { prometheus: "infra" } },
+//       ruleNamespaceSelector: { matchLabels: { prometheus: "infra" } },
+//       retention: "1d",
+//       storage: {
+//         volumeClaimTemplate: {
+//           spec: { resources: { requests: { storage: "20Gi" } } }
+//         }
+//       },
+//       securityContext: {
+//         fsGroup: 2000,
+//         runAsNonRoot: true,
+//         runAsUser: 1000
+//       }
+//     }
+//   },
+//   { provider, dependsOn: [operatorChart] }
+// );
 
 // export const svc = new k8s.core.v1.Service(
 //   "prometheus-infra",
