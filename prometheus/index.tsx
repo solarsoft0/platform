@@ -36,7 +36,10 @@ export const operatorChart = new k8s.helm.v3.Chart(
         enabled: true
       },
       prometheus: {
-        enabled: true
+        enabled: true,
+        prometheusSpec: {
+          serviceMonitorNamespaceSelector: { prometheus: "infra" }
+        }
       },
       kubeScheduler: { enabled: false },
       kubeEtcd: { enabled: false },
@@ -46,88 +49,34 @@ export const operatorChart = new k8s.helm.v3.Chart(
   { provider }
 );
 
-// export const prom = new crd.monitoring.v1.Prometheus(
-//   "prometheus-infra",
-//   {
-//     metadata: { name: "prometheus-infra", namespace: "monitoring" },
-//     spec: {
-//       alerting: {
-//         alertmanagers: [
-//           { namespace: "monitoring", name: "alertmanager", port: "web" }
-//         ]
-//       },
-//       serviceAccountName: "prometheus",
-//       serviceMonitorSelector: { matchLabels: { prometheus: "infra" } },
-//       serviceMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-//       podMonitorSelector: { matchLabels: { prometheus: "infra" } },
-//       podMonitorNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-//       ruleSelector: { matchLabels: { prometheus: "infra" } },
-//       ruleNamespaceSelector: { matchLabels: { prometheus: "infra" } },
-//       retention: "1d",
-//       storage: {
-//         volumeClaimTemplate: {
-//           spec: { resources: { requests: { storage: "20Gi" } } }
-//         }
-//       },
-//       securityContext: {
-//         fsGroup: 2000,
-//         runAsNonRoot: true,
-//         runAsUser: 1000
-//       }
-//     }
-//   },
-//   { provider, dependsOn: [operatorChart] }
-// );
+const datasource = YAML.stringify({
+  apiVersion: 1,
+  datasources: [
+    {
+      name: "Prometheus Infrastructure",
+      type: "prometheus",
+      access: "proxy",
+      url: "http://prom-kube-prometheus-stack-prometheus:9090"
+    }
+  ]
+});
 
-// export const svc = new k8s.core.v1.Service(
-//   "prometheus-infra",
-//   {
-//     metadata: { namespace: "monitoring", name: "prometheus-infra" },
-//     spec: {
-//       ports: [
-//         {
-//           name: "http",
-//           port: 80,
-//           protocol: "TCP",
-//           targetPort: "web"
-//         }
-//       ],
-//       selector: {
-//         prometheus: "prometheus-infra"
-//       }
-//     }
-//   },
-//   { provider }
-// );
-
-// const datasource = YAML.stringify({
-//   apiVersion: 1,
-//   datasources: [
-//     {
-//       name: "Prometheus Infrastructure",
-//       type: "prometheus",
-//       access: "proxy",
-//       url: "http://prometheus-infra"
-//     }
-//   ]
-// });
-
-// export const configMap = new k8s.core.v1.ConfigMap(
-//   "prometheus-grafana",
-//   {
-//     metadata: {
-//       name: "prometheus-grafana",
-//       namespace: namespace.metadata.name,
-//       labels: {
-//         app: "prometheus",
-//         grafana_datasource: "1"
-//       }
-//     },
-//     data: {
-//       "prometheus-datasource.yaml": datasource
-//     }
-//   },
-//   { provider }
-// );
+export const configMap = new k8s.core.v1.ConfigMap(
+  "prometheus-grafana",
+  {
+    metadata: {
+      name: "prometheus-grafana",
+      namespace: namespace.metadata.name,
+      labels: {
+        app: "prometheus",
+        grafana_datasource: "1"
+      }
+    },
+    data: {
+      "prometheus-datasource.yaml": datasource
+    }
+  },
+  { provider }
+);
 
 export default [];
