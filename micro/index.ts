@@ -9,34 +9,42 @@ import { project, provider } from "../cluster";
 import { ObjectMeta } from "../crd/meta/v1";
 import { Output } from "@pulumi/pulumi";
 
-const image = "ghcr.io/m3o/cells:micro";
+const image = "ghcr.io/m3o/platform:20201123154137fa65d6";
 const imagePullPolicy = "Always";
 const replicas = 2;
 
-export const microNamespace = new k8s.core.v1.Namespace("micro-namespace", {
-  metadata: {
-    name: "micro",
-    labels: {
-      "owner": "micro",
-    },
+export const microNamespace = new k8s.core.v1.Namespace(
+  "micro-namespace",
+  {
+    metadata: {
+      name: "micro",
+      labels: {
+        owner: "micro"
+      }
+    }
   },
-}, { provider });
+  { provider }
+);
 
-export const serverNamespace = new k8s.core.v1.Namespace("server-namespace", {
-  metadata: {
-    name: "server",
-    labels: {
-      "owner": "micro",
-    },
+export const serverNamespace = new k8s.core.v1.Namespace(
+  "server-namespace",
+  {
+    metadata: {
+      name: "server",
+      labels: {
+        owner: "micro"
+      }
+    }
   },
-}, { provider });
+  { provider }
+);
 
 export const jwtCert = new crd.certmanager.v1.Certificate(
   "jwt-creds",
   {
     metadata: {
       name: "jwt-creds",
-      namespace: "server",
+      namespace: "server"
     },
     spec: {
       duration: "87600h", // 10 years
@@ -83,7 +91,7 @@ export const runtimeServiceAccount = new k8s.core.v1.ServiceAccount(
   "micro-runtime-sa",
   {
     metadata: {
-      namespace: "server",
+      namespace: "server"
     }
   },
   { provider }
@@ -170,7 +178,7 @@ export const runtimeRoleBinding = new k8s.rbac.v1.RoleBinding(
   {
     metadata: {
       name: "micro-runtime",
-      namespace: "server",
+      namespace: "server"
     },
     roleRef: {
       apiGroup: "rbac.authorization.k8s.io",
@@ -193,7 +201,7 @@ export const spacesSecret = new k8s.core.v1.Secret(
   {
     metadata: {
       name: "do-spaces",
-      namespace: "server",
+      namespace: "server"
     },
     stringData: {
       accessId: conf.require("spacesAccessId"),
