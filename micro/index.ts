@@ -9,7 +9,7 @@ import { project, provider } from "../cluster";
 import { ObjectMeta } from "../crd/meta/v1";
 import { Output } from "@pulumi/pulumi";
 
-const image = "bentoogood/micro:pulumi-v2";
+const image = "ghcr.io/m3o/cells:micro";
 const imagePullPolicy = "Always";
 const replicas = 2;
 
