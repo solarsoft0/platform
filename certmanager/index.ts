@@ -7,7 +7,7 @@ const conf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cert-manager",
-  { metadata: { name: "cert-manager", labels: { prometheus: "infra" } } },
+  { metadata: { name: "cert-manager" } },
   { provider }
 );
 
@@ -33,11 +33,7 @@ export const chart = new k8s.helm.v3.Chart(
     values: {
       installCRDs: true,
       prometheus: {
-        servicemonitor: {
-          enabled: true,
-          prometheusInstance: "infra",
-          labels: { prometheus: "infra" }
-        }
+        enabled: true
       }
     }
   },

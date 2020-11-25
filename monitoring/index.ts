@@ -8,7 +8,7 @@ const conf = new pulumi.Config();
 
 export const namespace = new k8s.core.v1.Namespace(
   "monitoring",
-  { metadata: { name: "monitoring", labels: { prometheus: "infra" } } },
+  { metadata: { name: "monitoring" } },
   { provider }
 );
 

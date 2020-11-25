@@ -4,14 +4,14 @@ import * as ocean from "@pulumi/digitalocean";
 import { provider, project } from "../cluster";
 import { letsEncryptCerts } from "../certmanager";
 import { ObjectMeta } from "../crd/meta/v1";
-import { proxyService, apiService, serverNamespace } from "../micro";
+import { proxyService, apiService } from "../micro";
 
 const conf = new pulumi.Config("digitalocean");
 const cf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "nginx",
-  { metadata: { name: "nginx", labels: { prometheus: "infra" } } },
+  { metadata: { name: "nginx" } },
   { provider }
 );
 
@@ -38,11 +38,7 @@ export const externalChart = new k8s.helm.v3.Chart(
       controller: {
         ingressClass: "external",
         metrics: {
-          enabled: true,
-          serviceMonitor: {
-            enabled: true,
-            additionalLabels: { prometheus: "infra" }
-          }
+          enabled: true
         },
         service: {
           loadBalancerIP: externalIP.ipAddress
@@ -103,11 +99,7 @@ export const internalChart = new k8s.helm.v3.Chart(
         },
         ingressClass: "internal",
         metrics: {
-          enabled: true,
-          serviceMonitor: {
-            enabled: true,
-            additionalLabels: { prometheus: "infra" }
-          }
+          enabled: true
         },
         service: {
           type: "ClusterIP"

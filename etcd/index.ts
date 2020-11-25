@@ -5,7 +5,7 @@ import * as crd from "../crd";
 
 export const namespace = new k8s.core.v1.Namespace(
   "etcd",
-  { metadata: { name: "etcd", labels: { prometheus: "infra" } } },
+  { metadata: { name: "etcd" } },
   { provider }
 );
 
@@ -108,47 +108,6 @@ export const chart = new k8s.helm.v3.Chart(
     }
   },
   { provider, dependsOn: [caCerts, namespace] }
-);
-
-export const serviceMonitor = new crd.monitoring.v1.PodMonitor(
-  "etcd",
-  {
-    metadata: {
-      namespace: namespace.metadata.name,
-      labels: { prometheus: "infra" }
-    },
-    spec: {
-      selector: { matchLabels: { "app.kubernetes.io/name": "etcd" } },
-      namespaceSelector: { matchNames: ["etcd"] },
-      podMetricsEndpoints: [
-        {
-          port: "client",
-          path: "/metrics",
-          scheme: "https",
-          tlsConfig: {
-            serverName: "etcd",
-            ca: {
-              secret: {
-                name: (serverTLS.spec as any).secretName,
-                key: "ca.crt"
-              }
-            },
-            cert: {
-              secret: {
-                name: (serverTLS.spec as any).secretName,
-                key: "tls.crt"
-              }
-            },
-            keySecret: {
-              name: (serverTLS.spec as any).secretName,
-              key: "tls.key"
-            }
-          }
-        }
-      ]
-    }
-  },
-  { provider }
 );
 
 export default [namespace, serverTLS, clientTLS, chart];

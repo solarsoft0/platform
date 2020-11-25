@@ -1,3 +1,3 @@
 # Requires https://github.com/pulumi/crd2pulumi
 crds:
-	crd2pulumi --nodejsPath ./crd ./prometheus/bundle.yaml ./certmanager/crds/* --force
+	crd2pulumi --nodejsPath ./crd ./certmanager/crds/* --force

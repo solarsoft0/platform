@@ -40,11 +40,15 @@ export const tls = new crd.certmanager.v1.Certificate(
   { provider }
 );
 
-export const bucket = new ocean.SpacesBucket("timescale-backups", {
-  region: "ams3",
-}, {
-  parent: project,
-});
+export const bucket = new ocean.SpacesBucket(
+  "timescale-backups",
+  {
+    region: "ams3"
+  },
+  {
+    parent: project
+  }
+);
 
 export const creds = new k8s.core.v1.Secret(
   "timescale-credentials",
@@ -65,14 +69,14 @@ export const pgBackrest = new k8s.core.v1.Secret(
   "timescale-pgbackrest",
   {
     metadata: {
-      namespace: namespace.metadata.name,
+      namespace: namespace.metadata.name
     },
     stringData: {
       PGBACKREST_REPO1_S3_BUCKET: bucket.name,
       PGBACKREST_REPO1_S3_REGION: bucket.region as any,
       PGBACKREST_REPO1_S3_KEY: conf.require("spacesAccessId"),
       PGBACKREST_REPO1_S3_KEY_SECRET: conf.require("spacesSecretKey"),
-      PGBACKREST_REPO1_S3_ENDPOINT: "ams3.digitaloceanspaces.com",
+      PGBACKREST_REPO1_S3_ENDPOINT: "ams3.digitaloceanspaces.com"
     }
   },
   { provider }
@@ -97,7 +101,36 @@ export const chart = new k8s.helm.v3.Chart(
       secretNames: {
         credentials: creds.metadata.name,
         certificate: tls.spec.secretName,
-        pgbackrest: pgBackrest.metadata.name,
+        pgbackrest: pgBackrest.metadata.name
+      },
+      patroni: {
+        postgresql: {
+          parameters: {
+            max_wal_size: "16GB",
+            min_wal_size: "10GB",
+            shared_buffers: "1GB",
+            work_mem: "64MB"
+          }
+        },
+        bootstrap: {
+          method: "restore_or_initdb",
+          restore_or_initdb: {
+            command:
+              "/etc/timescaledb/scripts/restore_or_initdb.sh --encoding=UTF8 --locale=C.UTF-8 --wal-segsize=256\n"
+          },
+          dcs: {
+            synchronous_mode: true,
+            master_start_timeout: 0,
+            postgresql: {
+              use_slots: false,
+              parameters: {
+                checkpoint_timeout: "300s",
+                temp_file_limit: "10GB",
+                synchronous_commit: "remote_apply"
+              }
+            }
+          }
+        }
       },
       backup: {
         enabled: true,
@@ -112,15 +145,12 @@ export const chart = new k8s.helm.v3.Chart(
       persistentVolumes: {
         data: {
           enabled: true,
-          size: "40Gi",
+          size: "80Gi"
         },
         wal: {
           enabled: true,
-          size: "5Gi",
+          size: "20Gi"
         }
-      },
-      patroni: {
-        postgresql: { parameters: { max_wal_size: "4GB" } }
       }
     }
   },

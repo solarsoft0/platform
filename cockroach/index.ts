@@ -12,7 +12,7 @@ const conf = new pulumi.Config("m3o");
 
 export const namespace = new k8s.core.v1.Namespace(
   "cockroach",
-  { metadata: { name: "cockroach", labels: { prometheus: "infra" } } },
+  { metadata: { name: "cockroach" } },
   { provider }
 );
 
@@ -147,6 +147,7 @@ export const chart = new k8s.helm.v3.Chart(
     namespace: namespace.metadata.name,
     chart: "cockroachdb",
     fetchOpts: { repo: "https://charts.cockroachdb.com/" },
+    version: "5.0.0",
     values: {
       statefulset: {
         replicas: 3,
@@ -156,7 +157,7 @@ export const chart = new k8s.helm.v3.Chart(
         podAntiAffinity: { type: "soft", weight: 100 }
       },
       service: {
-        public: { labels: { prometheus: "infra", cluster: "micro" } }
+        public: { labels: { cluster: "micro" } }
       },
       tls: {
         enabled: true,
@@ -167,33 +168,21 @@ export const chart = new k8s.helm.v3.Chart(
           nodeSecret: (serverTLS.spec as any).secretName
         }
       }
-    }
-  },
-  { provider }
-);
-
-export const serviceMonitor = new crd.monitoring.v1.ServiceMonitor(
-  "cockroach",
-  {
-    metadata: {
-      namespace: namespace.metadata.name,
-      labels: { prometheus: "infra" }
     },
-    spec: {
-      selector: { matchLabels: { prometheus: "infra" } },
-      namespaceSelector: { matchNames: ["cockroach"] },
-      targetLabels: ["cluster"],
-      endpoints: [
-        {
-          port: "http",
-          path: "/_status/vars",
-          scheme: "https",
-          tlsConfig: { insecureSkipVerify: true }
+    transformations: [
+      // Remove prometheus annotations as it's TLS and can't be scraped normally
+      (obj: any) => {
+        if (obj.kind === "Service") {
+          if (obj.metadata && obj.metadata.annotations) {
+            delete obj.metadata.annotations["prometheus.io/scrape"];
+          }
         }
-      ]
-    }
+      }
+    ]
   },
-  { provider }
+  {
+    provider
+  }
 );
 
 const tlsVolumes = [

@@ -1,49 +1,129 @@
 import * as k8s from "@pulumi/kubernetes";
+import { letsEncryptCerts } from "../certmanager";
 import { provider } from "../cluster";
 import { namespace } from "../monitoring";
 import * as YAML from "yamljs";
-import * as crd from "../crd";
 
-// One alertmanager is shared amongst N proms
-export const alertmanager = new crd.monitoring.v1.Alertmanager(
-  "alertmanager",
-  {
-    metadata: { namespace: "monitoring", name: "alertmanager" },
-    spec: { replicas: 2 }
-  },
-  { provider }
-);
+const alertmanagerUrls = ["alerts.internal.production.m3o.com"];
+const promUrls = ["prom.internal.production.m3o.com"];
 
-export const operatorChart = new k8s.helm.v3.Chart(
-  "prom",
+export const chart = new k8s.helm.v3.Chart(
+  "prometheus",
   {
-    chart: "kube-prometheus-stack",
-    fetchOpts: {
-      repo: "https://prometheus-community.github.io/helm-charts"
-    },
     namespace: namespace.metadata.name,
+    chart: "prometheus",
+    fetchOpts: { repo: "https://prometheus-community.github.io/helm-charts" },
     values: {
-      namespaceOverride: "monitoring",
-      defaultRules: { create: true },
-      prometheusOperator: {
-        tls: { enabled: false },
-        admissionWebhooks: { enabled: false }
-      },
-      grafana: {
-        enabled: false
-      },
       alertmanager: {
-        enabled: true
-      },
-      prometheus: {
-        enabled: true,
-        prometheusSpec: {
-          serviceMonitorNamespaceSelector: { prometheus: "infra" }
+        replicaCount: 2,
+        statefulSet: { enabled: true, headless: { enableMeshPeer: true } },
+        baseURL: "https://" + alertmanagerUrls[0],
+        ingress: {
+          enabled: true,
+          annotations: {
+            "kubernetes.io/ingress.class": "internal",
+            "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as any)
+              .name!
+          },
+          hosts: alertmanagerUrls,
+          tls: [{ secretName: "alertmanager-tls", hosts: alertmanagerUrls }],
+          service: {
+            gRPC: { enabled: true }
+          }
         }
       },
-      kubeScheduler: { enabled: false },
-      kubeEtcd: { enabled: false },
-      kubeControllerManager: { enabled: false }
+      server: {
+        remoteWrite: [
+          {
+            url: "http://promscale-connector:9201/write",
+            name: "promscale"
+          }
+        ],
+        ingress: {
+          enabled: true,
+          annotations: {
+            "kubernetes.io/ingress.class": "internal",
+            "cert-manager.io/cluster-issuer": (letsEncryptCerts.metadata as any)
+              .name!
+          },
+          hosts: promUrls,
+          tls: [{ secretName: "prom-tls", hosts: promUrls }]
+        },
+        persistentVolume: {
+          size: "40Gi"
+        },
+        replicaCount: 1,
+        statefulSet: { enabled: true },
+        service: {
+          gRPC: { enabled: true }
+        },
+        baseURL: "https://" + promUrls[0]
+      },
+      extraScrapeConfigs: YAML.stringify([
+        {
+          job_name: "kubernetes-service-endpoints",
+          tls_config: { insecure_skip_verify: true },
+          kubernetes_sd_configs: [
+            {
+              role: "endpoints"
+            }
+          ],
+          relabel_configs: [
+            {
+              source_labels: [
+                "__meta_kubernetes_service_annotation_prometheus_io_scrape"
+              ],
+              action: "keep",
+              regex: true
+            },
+            {
+              source_labels: [
+                "__meta_kubernetes_service_annotation_prometheus_io_scheme"
+              ],
+              action: "replace",
+              target_label: "__scheme__",
+              regex: "(https?)"
+            },
+            {
+              source_labels: [
+                "__meta_kubernetes_service_annotation_prometheus_io_path"
+              ],
+              action: "replace",
+              target_label: "__metrics_path__",
+              regex: "(.+)"
+            },
+            {
+              source_labels: [
+                "__address__",
+                "__meta_kubernetes_service_annotation_prometheus_io_port"
+              ],
+              action: "replace",
+              target_label: "__address__",
+              regex: "([^:]+)(?::\\d+)?;(\\d+)",
+              replacement: "$1:$2"
+            },
+            {
+              action: "labelmap",
+              regex: "__meta_kubernetes_service_label_(.+)"
+            },
+            {
+              source_labels: ["__meta_kubernetes_namespace"],
+              action: "replace",
+              target_label: "kubernetes_namespace"
+            },
+            {
+              source_labels: ["__meta_kubernetes_service_name"],
+              action: "replace",
+              target_label: "kubernetes_name"
+            },
+            {
+              source_labels: ["__meta_kubernetes_pod_node_name"],
+              action: "replace",
+              target_label: "kubernetes_node"
+            }
+          ]
+        }
+      ])
     }
   },
   { provider }
@@ -53,10 +133,12 @@ const datasource = YAML.stringify({
   apiVersion: 1,
   datasources: [
     {
-      name: "Prometheus Infrastructure",
+      name: "Prometheus (Infrastructure)",
       type: "prometheus",
       access: "proxy",
-      url: "http://prom-kube-prometheus-stack-prometheus:9090"
+      url: "http://prometheus-server",
+      isDefault: true,
+      editable: true
     }
   ]
 });

@@ -6,7 +6,7 @@ import { serverNamespace } from "../micro";
 
 export const namespace = new k8s.core.v1.Namespace(
   "nats",
-  { metadata: { name: "nats", labels: { prometheus: "infra" } } },
+  { metadata: { name: "nats" } },
   { provider }
 );
 
@@ -112,13 +112,7 @@ export const chart = new k8s.helm.v3.Chart(
     version: "0.7.2",
     values: {
       exporter: {
-        enabled: true,
-        image: "synadia/prometheus-nats-exporter:0.5.0",
-        pullPolicy: "IfNotPresent",
-        serviceMonitor: {
-          enabled: true,
-          labels: { prometheus: "infra" }
-        }
+        enabled: true
       },
       nats: {
         tls: {
@@ -153,11 +147,7 @@ export const streamingChart = new k8s.helm.v3.Chart(
     version: "0.7.2",
     values: {
       exporter: {
-        enabled: true,
-        serviceMonitor: {
-          enabled: true
-          // labels: { prometheus: "infra" }
-        }
+        enabled: true
       },
       stan: {
         replicas: 3,

@@ -46,5 +46,9 @@ config:
   m3o:promscale_postgres_password:
     secure: AAABAKC1qvE2EfxERCygCZajXWdPVzVWr26wSEvERVFKB9nizbns7wuRvB6iH+VgmLfECABkp8PDvpJ5dQUrgQ==
   m3o:proxy-hosts: proxy.production.m3o.com,proxy.m3o.com,proxy.m3o.dev
+  m3o:slack-alerts-webhook:
+    secure: AAABAKXsMLN/QUAtHm3F9mt6HuayiOQCGZ8MAjzoKJ/7GkixZZE08Sw7RoLjt+2AtY33OG0pZ+rTDO+Pqo/BtOcouUnNv60CkmXx2XLBMLePRaGxAVxswG6+Kckt1TmMrZecGj2ePPspxinITLMw
+  m3o:slack-api-token:
+    secure: AAABACSOpoKOTQQUSR2ZgyaVd64w08rYDC2EkZBY3a3bxXcBFfSBktkd0aL+jCWyGDbS5PYFMqRidqZjrcQupkJFfInYD+zArA==
   m3o:tailscale_access_key:
     secure: AAABAH+qFXfTpv8VEIneUqmJYilZfVcatmaGY1aq2N0q+T1x0FLvsHOP/l0Q5Bfk3lXkv0wB04JEVlruaMo=
