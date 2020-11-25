@@ -1,6 +1,6 @@
 # M3O Platform
 
-This is the Pulumi scripts to manage m3o.dev and m3o.org
+This is the Pulumi scripts to manage the M3O Platform
 
 ## Generate the CA for the clusters cert issuer
 
@@ -94,3 +94,7 @@ Go to data.m3o.sh and follow the steps on screen
 ```
 kubectl exec -it cockroach-client -- ./cockroach sql --certs-dir=/certs --host=cockroach-cockroachdb.cockroach
 ```
+
+## License
+
+[Polyform Strict](https://polyformproject.org/licenses/strict/1.0.0/)
