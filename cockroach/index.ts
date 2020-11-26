@@ -35,6 +35,7 @@ export const serverTLS = new crd.certmanager.v1.Certificate(
     },
     spec: {
       secretName: "cockroach-tls-server",
+      duration: "8760h", // 10 years
       subject: {
         organizations: ["m3o"]
       },

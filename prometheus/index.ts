@@ -29,13 +29,13 @@ async function getFiles(dir: string) {
 (async function() {
   const files = await getFiles("./prometheus");
   const scrapeConfigs = files
-    .map((x: string) => (x.includes("scrape.yml") ? YAML.load(x) : null))
+    .map((x: string) => (x.includes("scrape") ? YAML.load(x) : null))
     .filter(Boolean);
   const ruleConfigs = files
-    .map((x: string) => (x.includes("rules.yml") ? YAML.load(x) : null))
+    .map((x: string) => (x.includes("rules") ? YAML.load(x) : null))
     .filter(Boolean);
   const alertConfigs = files
-    .map((x: string) => (x.includes("alerts.yml") ? YAML.load(x) : null))
+    .map((x: string) => (x.includes("alerts") ? YAML.load(x) : null))
     .filter(Boolean);
 
   new k8s.helm.v3.Chart(
@@ -116,9 +116,9 @@ async function getFiles(dir: string) {
                     color:
                       '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}',
                     title:
-                      '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}',
+                      '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}',
                     text:
-                      "{{ with index .Alerts 0 -}}\n  :chart_with_upwards_trend: *<{{ .GeneratorURL }}|Graph>*\n  {{- if .Annotations.runbook }}   :notebook: *<{{ .Annotations.runbook }}|Runbook>*{{ end }}\n{{ end }}\n*Alert details*:\n{{ range .Alerts -}}\n  *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}\n*Description:* {{ .Annotations.description }} *Details:*\n  {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`\n  {{ end }}\n{{ end }}",
+                      "{{ with index .Alerts 0 -}}\n  :chart_with_upwards_trend: *<{{ .GeneratorURL }}|Graph>*\n  {{- if .Annotations.runbook }}   :notebook: *<{{ .Annotations.runbook }}|Runbook>*{{ end }}\n{{ end }}\n{{ range .Alerts -}}\n  *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}\n*Description:* {{ .Annotations.description }} \n*Details:*\n  {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`\n  {{ end }}\n{{ end }}",
                     icon_url:
                       "https://images-na.ssl-images-amazon.com/images/I/614UUp7avTL._AC_UX522_.jpg"
                   }
@@ -126,6 +126,7 @@ async function getFiles(dir: string) {
               }
             ],
             route: {
+              group_by: ["alertname", "job"],
               group_wait: "10s",
               group_interval: "5m",
               receiver: "slack",
