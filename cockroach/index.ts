@@ -157,7 +157,7 @@ export const chart = new k8s.helm.v3.Chart(
         podAntiAffinity: { type: "soft", weight: 100 }
       },
       service: {
-        public: { labels: { cluster: "micro" } }
+        discovery: { labels: { cluster: "micro" } }
       },
       tls: {
         enabled: true,
@@ -174,7 +174,7 @@ export const chart = new k8s.helm.v3.Chart(
       (obj: any) => {
         if (obj.kind === "Service") {
           if (obj.metadata && obj.metadata.annotations) {
-            delete obj.metadata.annotations["prometheus.io/scrape"];
+            obj.metadata.annotations["prometheus.io/scrape"] = "false";
           }
         }
       }

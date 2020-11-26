@@ -1,0 +1,57 @@
+scrape_configs:
+- job_name: cockroachdb
+  honor_timestamps: true
+  scrape_interval: 1m
+  scrape_timeout: 10s
+  metrics_path: /_status/vars
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  relabel_configs:
+  - source_labels: [__meta_kubernetes_service_label_cluster]
+    separator: ;
+    regex: micro
+    replacement: $1
+    action: keep
+  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+    separator: ;
+    regex: (https?)
+    target_label: __scheme__
+    replacement: $1
+    action: replace
+  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+    separator: ;
+    regex: (.+)
+    target_label: __metrics_path__
+    replacement: $1
+    action: replace
+  - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+    separator: ;
+    regex: ([^:]+)(?::\d+)?;(\d+)
+    target_label: __address__
+    replacement: $1:$2
+    action: replace
+  - source_labels: [__meta_kubernetes_namespace]
+    separator: ;
+    regex: (.*)
+    target_label: kubernetes_namespace
+    replacement: $1
+    action: replace
+  - separator: ;
+    regex: __meta_kubernetes_service_label_(.+)
+    replacement: $1
+    action: labelmap
+  - source_labels: [__meta_kubernetes_service_name]
+    separator: ;
+    regex: (.*)
+    target_label: kubernetes_name
+    replacement: $1
+    action: replace
+  - source_labels: [__meta_kubernetes_pod_node_name]
+    separator: ;
+    regex: (.*)
+    target_label: kubernetes_node
+    replacement: $1
+    action: replace
+  kubernetes_sd_configs:
+  - role: endpoints

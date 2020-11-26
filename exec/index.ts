@@ -38,10 +38,6 @@ class K8SExecProvider implements pulumi.dynamic.ResourceProvider {
       replaces.push("namespace");
     }
 
-    if (olds.kubeConfig !== news.kubeConfig) {
-      replaces.push("kubeConfig");
-    }
-
     if (olds.podSelector !== news.podSelector) {
       replaces.push("podSelector");
     }

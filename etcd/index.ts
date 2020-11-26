@@ -81,10 +81,7 @@ export const chart = new k8s.helm.v3.Chart(
       readinessProbe: { enabled: false },
       livenessProbe: { enabled: false },
       metrics: {
-        enabled: true,
-        serviceMonitor: {
-          enabled: false
-        }
+        enabled: true
       },
       auth: {
         rbac: { enabled: false },

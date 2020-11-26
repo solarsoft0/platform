@@ -41,7 +41,7 @@ export const tls = new crd.certmanager.v1.Certificate(
 );
 
 export const bucket = new ocean.SpacesBucket(
-  "timescale-backups",
+  "timescale-backup",
   {
     region: "ams3"
   },
@@ -145,7 +145,7 @@ export const chart = new k8s.helm.v3.Chart(
       persistentVolumes: {
         data: {
           enabled: true,
-          size: "80Gi"
+          size: "150Gi"
         },
         wal: {
           enabled: true,
