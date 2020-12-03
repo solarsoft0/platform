@@ -3,12 +3,13 @@ module github.com/m3o/platform/profile/platform
 go 1.15
 
 require (
-	github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201120132803-2fbadd54c4e2
+	github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201203165704-226c32e1ea25
 	github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201120132803-2fbadd54c4e2
 	github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201120132803-2fbadd54c4e2
 	github.com/micro/micro/plugin/nats/stream/v3 v3.0.0-20201120132803-2fbadd54c4e2
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201120132803-2fbadd54c4e2
-	github.com/micro/micro/v3 v3.0.1
+	github.com/micro/micro/v3 v3.0.2
+	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 )
 
