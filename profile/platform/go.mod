@@ -6,7 +6,7 @@ require (
 	github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201203165704-226c32e1ea25
 	github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201120132803-2fbadd54c4e2
 	github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201120132803-2fbadd54c4e2
-	github.com/micro/micro/plugin/nats/stream/v3 v3.0.0-20201120132803-2fbadd54c4e2
+	github.com/micro/micro/plugin/nats/stream/v3 v3.0.0-20201204170603-40efd8dd90b8
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201120132803-2fbadd54c4e2
 	github.com/micro/micro/v3 v3.0.2
 	github.com/soheilhy/cmux v0.1.4 // indirect
