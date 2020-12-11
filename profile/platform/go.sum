@@ -262,6 +262,8 @@ github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201120132803-2fbadd54c4e2 h1
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201120132803-2fbadd54c4e2/go.mod h1:M1okyLi49YKBc3llg3qy0UnuvxqoPOyacaGjy8fjPLE=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201203165704-226c32e1ea25 h1:LzmJapIdz5d8S0n58x+nxsqlmb+s5V+2F9URP+qQFuo=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201203165704-226c32e1ea25/go.mod h1:M1okyLi49YKBc3llg3qy0UnuvxqoPOyacaGjy8fjPLE=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201211111539-69b0ac2e9140 h1:cVETD4SfJsEdK50y8kvvFhDrcoPK09n+3AV6C8+YyD8=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20201211111539-69b0ac2e9140/go.mod h1:M1okyLi49YKBc3llg3qy0UnuvxqoPOyacaGjy8fjPLE=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201120130544-8493c99b5eea h1:roNUh3h1cmdLnhQV5bW7uVPAjavG8uureMzY7yxPhlo=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201120130544-8493c99b5eea/go.mod h1:OAuPzMMZSIx+9l4hE9ta620FM/UuBlDWD2PaUwC3iLw=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201120132803-2fbadd54c4e2 h1:WGvuMLA0ZWHo8ByrcNnfjZL9o2upNan1u7vXW+XIbU8=
