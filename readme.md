@@ -2,6 +2,8 @@
 
 This is the Pulumi scripts to manage the Micro Platform
 
+## Usage
+
 ## Generate the CA for the clusters cert issuer
 
 ```
