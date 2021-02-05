@@ -1,6 +1,8 @@
-# M3O Platform
+# Micro Platform
 
-This is the Pulumi scripts to manage the M3O Platform
+This is the Pulumi scripts to manage the Micro Platform
+
+## Usage
 
 ## Generate the CA for the clusters cert issuer
 
