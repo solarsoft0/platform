@@ -1,6 +1,12 @@
 # Micro Platform
 
-This is the Pulumi scripts to manage the Micro Platform
+The Micro Platform is a cloud platform for API development or better known as Micro as a Service.
+
+## Overview
+
+This repo serves as infrastructure automation for the Micro Platform. It bootstraps [Micro](https://micro.mu) on to any cloud using Pulumi, 
+Kubernetes and related open source distributed systems infrastructure. The defaults are set to run on DigitalOcean with potential for 
+Google Cloud and other providers also built in.
 
 ## Usage
 
