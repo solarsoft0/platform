@@ -37,7 +37,21 @@ export const nodePool = new ocean.KubernetesNodePool("node-pool", {
   autoScale: true,
 });
 
-export const kubeconfig = cluster.kubeConfigs[0]!.rawConfig;
+
+// The DigitalOcean Kubernetes cluster periodically gets a new certificate,
+// so we look up the cluster by name and get the current kubeconfig after
+// initial provisioning. You'll notice that the `certificate-authority-data`
+// field changes on every `pulumi update`.
+export const kubeconfig = cluster.status.apply(status => {
+  if (status === "running") {
+    const clusterDataSource = cluster.name.apply(name => ocean.getKubernetesCluster({name}));
+    return clusterDataSource.kubeConfigs[0].rawConfig;
+  } else {
+    return cluster.kubeConfigs[0].rawConfig;
+  }
+});
+
+// export const kubeconfig = cluster.kubeConfigs[0]!.rawConfig;
 
 export const provider = new k8s.Provider("k8s-provider",
   { kubeconfig },

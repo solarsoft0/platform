@@ -76,7 +76,7 @@ export const chart = new k8s.helm.v3.Chart(
   {
     namespace: namespace.metadata.name,
     chart: "grafana",
-    fetchOpts: { repo: "https://grafana.github.io/helm-charts" },
+    fetchOpts: { repo: "https://grafana.github.io/helm-charts", version: "6.1.9" },
     values: {
       envFromSecret: creds.metadata.name,
       adminUser: "admin",
