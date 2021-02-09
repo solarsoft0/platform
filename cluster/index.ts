@@ -51,8 +51,6 @@ export const kubeconfig = cluster.status.apply(status => {
   }
 });
 
-// export const kubeconfig = cluster.kubeConfigs[0]!.rawConfig;
-
 export const provider = new k8s.Provider("k8s-provider",
   { kubeconfig },
   { dependsOn: [cluster, nodePool] },
