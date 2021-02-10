@@ -9,6 +9,7 @@ export const chart = new k8s.helm.v3.Chart(
     chart: "promtail",
     fetchOpts: {
       repo: "https://grafana.github.io/loki/charts",
+      version: "2.0.1",
     },
     values: {
       loki: {

@@ -43,7 +43,7 @@ async function getFiles(dir: string) {
     {
       namespace: namespace.metadata.name,
       chart: "prometheus",
-      fetchOpts: { repo: "https://prometheus-community.github.io/helm-charts" },
+      fetchOpts: { repo: "https://prometheus-community.github.io/helm-charts", version: "12.0.1" },
       values: {
         alertmanager: {
           replicaCount: 2,

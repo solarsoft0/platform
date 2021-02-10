@@ -60,7 +60,7 @@ export const chart = new k8s.helm.v3.Chart(
   {
     namespace: namespace.metadata.name,
     chart: "promscale",
-    fetchOpts: { repo: "https://charts.timescale.com" },
+    fetchOpts: { repo: "https://charts.timescale.com", "version": "0.1.2" },
     values: {
       image: "timescale/promscale:0.1.2",
       connection: {

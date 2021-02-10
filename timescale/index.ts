@@ -87,7 +87,7 @@ export const chart = new k8s.helm.v3.Chart(
   {
     namespace: namespace.metadata.name,
     chart: "timescaledb-single",
-    fetchOpts: { repo: "https://charts.timescale.com" },
+    fetchOpts: { repo: "https://charts.timescale.com", version: "0.7.1" },
     values: {
       image: { tag: "pg12.4-ts1.7.4-p1" },
       replicaCount: 2,

@@ -14,3 +14,4 @@ import "./metabase";
 import "./grafana";
 import "./loki";
 import "./kata";
+import "./redis";
