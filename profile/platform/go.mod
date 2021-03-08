@@ -8,7 +8,7 @@ require (
 	github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/nats/stream/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff
-	github.com/micro/micro/v3 v3.1.2-0.20210304191940-5974adaac2c7
+	github.com/micro/micro/v3 v3.1.2-0.20210308140109-1d66f228ad53
 	github.com/urfave/cli/v2 v2.3.0
 )
 
