@@ -178,6 +178,10 @@ export const streamingChart = new k8s.helm.v3.Chart(
         cluster: {
           enabled: true,
           logPath: "/data/stan/log"
+        },
+        limits: {
+          max_channels: 10000,
+          max_inactivity: "24h"
         }
       }
     }

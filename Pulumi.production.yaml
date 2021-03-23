@@ -10,7 +10,7 @@ config:
   digitalocean:spacesSecretKey:
     secure: AAABAOUi2oj7il91f/Ax9Cu4D+w9+n3qrY8J/V3fzIIpVBYk87w9QP4NnrcuM1HlPBlLUW19jPDwDUBbDk2ixWzyUN1m+RRxM1QR
   digitalocean:token:
-    secure: AAABAIrkcJfJvxhw1yl5gpi1rp+DXAteha8LcHD30HR9AHIka+sIk+TZuh/mRcElWul8DW782X/3fTSElhasgaSO96NDOeK1iAyg5ACuE9xiZsn4zZM7/NHqlJY2v6Sb
+    secure: AAABAETG3wUMmMO0xAYd3RDt2RRTGU1fQ/ZuBVVi+0SS0G++yzn4iVqifmvtGH4H4QprXyXQsn+KSmew1/a8ul5AjowkrdZjIL9hnzNOWWUAuTfAg6j4VZjzfzvNtnvL
   gcp:project:
     secure: AAABAC4eu6J7hqI435aPFgrW8bmWbqifBkXfI86hTR1QOvVkjkdxqmeGRQ==
   gcp:region: europe-west2
