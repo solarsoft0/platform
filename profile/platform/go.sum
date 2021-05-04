@@ -297,6 +297,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0j
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210205114115-75aad3b94f08 h1:jJsh7TuzK5MOOe52zq7GxCH+5589VaGtKcs0mPFlNak=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210205114115-75aad3b94f08/go.mod h1:/QVkZ2KEv6CgR6ym7WKtSVB694/2d6RFhrLEYYTMl7c=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210504080430-72fde5b520e0 h1:AseBFWjbZ8Osop/HY04Dxa7u6WNvTMCZmB4uGT14bwE=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210504080430-72fde5b520e0/go.mod h1:/QVkZ2KEv6CgR6ym7WKtSVB694/2d6RFhrLEYYTMl7c=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff h1:LZjbkAu4CmwOI4plfntInujhFFMY03Dssl/bulU5rbo=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff/go.mod h1:sUk0YCrz3qdEVx9euaPlAkdXcc+SQJHTNfSrjbh/Fmg=
 github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201217215412-2f7ad18595ff h1:em/g0gKHNC3kRHG8KcDzOvr+eHMRRC2Utjxl5BTE/40=
