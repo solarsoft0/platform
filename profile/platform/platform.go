@@ -27,7 +27,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	// plugins
-	"github.com/micro/micro/plugin/postgres/v3"
+	"github.com/micro/micro/plugin/cockroach/v3"
 	"github.com/micro/micro/plugin/etcd/v3"
 	natsBroker "github.com/micro/micro/plugin/nats/broker/v3"
 	natsStream "github.com/micro/micro/plugin/nats/stream/v3"
@@ -43,10 +43,10 @@ var Profile = &profile.Profile{
 	Name: "platform",
 	Setup: func(ctx *cli.Context) error {
 		auth.DefaultAuth = jwt.NewAuth()
-		// the postgres store will connect immediately so the address must be passed
-		// when the store is created. The postgres store address contains the location
+		// the cockroach store will connect immediately so the address must be passed
+		// when the store is created. The cockroach store address contains the location
 		// of certs so it can't be defaulted like the broker and registry.
-		store.DefaultStore = postgres.NewStore(store.Nodes(ctx.String("store_address")))
+		store.DefaultStore = cockroach.NewStore(store.Nodes(ctx.String("store_address")))
 		config.DefaultConfig, _ = storeConfig.NewConfig(store.DefaultStore, "")
 		profile.SetupBroker(natsBroker.NewBroker(broker.Addrs(ctx.String("broker_address"))))
 		profile.SetupRegistry(etcd.NewRegistry(registry.Addrs(ctx.String("registry_address"))))

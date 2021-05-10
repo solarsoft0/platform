@@ -303,6 +303,8 @@ github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210506120339-131287e16d8c h1
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210506120339-131287e16d8c/go.mod h1:/QVkZ2KEv6CgR6ym7WKtSVB694/2d6RFhrLEYYTMl7c=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210506130623-3a02c06c0f43 h1:CLHWdd0UxBE6rfvfm2ioTI3Hew7Q+LBn4yEUxekDlAc=
 github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210506130623-3a02c06c0f43/go.mod h1:/QVkZ2KEv6CgR6ym7WKtSVB694/2d6RFhrLEYYTMl7c=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210510144512-ae06e7171156 h1:ziFJ3gl0qFPK7EpOrLpPakqemm05S9fvAUFOkHW6hXY=
+github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210510144512-ae06e7171156/go.mod h1:/QVkZ2KEv6CgR6ym7WKtSVB694/2d6RFhrLEYYTMl7c=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff h1:LZjbkAu4CmwOI4plfntInujhFFMY03Dssl/bulU5rbo=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff/go.mod h1:sUk0YCrz3qdEVx9euaPlAkdXcc+SQJHTNfSrjbh/Fmg=
 github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201217215412-2f7ad18595ff h1:em/g0gKHNC3kRHG8KcDzOvr+eHMRRC2Utjxl5BTE/40=
