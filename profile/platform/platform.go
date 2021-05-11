@@ -23,10 +23,10 @@ import (
 	microRuntime "github.com/micro/micro/v3/service/runtime"
 	"github.com/micro/micro/v3/service/runtime/kubernetes"
 	"github.com/micro/micro/v3/service/store"
-	"github.com/micro/micro/v3/service/store/s3"
 	"github.com/urfave/cli/v2"
 
 	// plugins
+	"github.com/micro/micro/plugin/s3/v3"
 	"github.com/micro/micro/plugin/cockroach/v3"
 	"github.com/micro/micro/plugin/etcd/v3"
 	natsBroker "github.com/micro/micro/plugin/nats/broker/v3"

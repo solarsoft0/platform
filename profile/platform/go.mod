@@ -3,6 +3,7 @@ module github.com/m3o/platform/profile/platform
 go 1.15
 
 require (
+	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511090807-70c2c1bfef0e
 	github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210510144512-ae06e7171156
 	github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/nats/broker/v3 v3.0.0-20201217215412-2f7ad18595ff
