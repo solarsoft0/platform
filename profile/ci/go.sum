@@ -293,6 +293,7 @@ github.com/lib/pq v1.8.0/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/linode/linodego v0.10.0/go.mod h1:cziNP7pbvE3mXIPneHj0oRY8L1WtGEIKlZ8LANE4eXA=
 github.com/liquidweb/liquidweb-go v1.6.0/go.mod h1:UDcVnAMDkZxpw4Y7NOHkqoeiGacVLEIG/i5J9cyixzQ=
 github.com/m3o/platform v0.0.0-20210512103138-4a540cec553c/go.mod h1:QkxbunMt+ayRnVooak4zV15+IZyoKfLqebKfYThZPrA=
+github.com/m3o/platform v0.0.0-20210512105552-e6700d708e74/go.mod h1:QkxbunMt+ayRnVooak4zV15+IZyoKfLqebKfYThZPrA=
 github.com/m3o/platform/profile/ci v0.0.0-20210512103138-4a540cec553c/go.mod h1:csMPFxGfB/97l25zYDyzm4AAZLlYGe7e4fw1QfDzVNU=
 github.com/m3o/platform/profile/platform v0.0.0-20210511122153-213b6d9c6efb/go.mod h1:MIjdbkxyebs55Cb5kruc9hCmSBPhVeHrRqwxUJVoCVo=
 github.com/m3o/platform/profile/platform v0.0.0-20210512103138-4a540cec553c/go.mod h1:kqpLBQSPixJOfe9UuqtHOUuYgrEmyrPX99l0x7NART8=
@@ -325,6 +326,8 @@ github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512102836-8ba73352f7ac h1:HCuvmR
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512102836-8ba73352f7ac/go.mod h1:jZ47KVBOE+vGruQk8ys556hbtHT5690ZbiGUpwr89ZQ=
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512105310-157f47d90d98 h1:TpcSs2WS/sm+v/dO6vk5RM8CBh/Nk/0uENLxj9lIzGQ=
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512105310-157f47d90d98/go.mod h1:/4pQaUZmc8k+9++t3iYMUgQuKFyk1xv+tndvsz2BSEw=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512111111-9e3e99a26e10 h1:qmCdk9PbAiZxbI5tIKK59K8uPNl+7P8DEPPa7fQd934=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210512111111-9e3e99a26e10/go.mod h1:/4pQaUZmc8k+9++t3iYMUgQuKFyk1xv+tndvsz2BSEw=
 github.com/micro/micro/v3 v3.0.0-beta.6/go.mod h1:nirjvYSFibH15AsLQBsN6xiAPXIpl/uYG/3nvczdsJo=
 github.com/micro/micro/v3 v3.0.4/go.mod h1:dZa1KcK6Uh9ny7nhgHxOvoPiZR5cAnZefYT+EMmGwp4=
 github.com/micro/micro/v3 v3.1.2-0.20210304075604-7c315c030e4d h1:bl2OaiDJ05NQ2QqJwe864Jkf0CO1iNRwUansjfkh3bU=
@@ -337,6 +340,8 @@ github.com/micro/micro/v3 v3.2.2-0.20210512102836-8ba73352f7ac h1:K6mgbeP7K8R8Ke
 github.com/micro/micro/v3 v3.2.2-0.20210512102836-8ba73352f7ac/go.mod h1:vOF8P1IzBIvhM/p5PWLyy7zaFTLqcFe9oIzhw9AaLaI=
 github.com/micro/micro/v3 v3.2.2-0.20210512105310-157f47d90d98 h1:3YiUWvRsle67/O2eoNSWr8EFzc+2d6xJoIkG9Zf6vhY=
 github.com/micro/micro/v3 v3.2.2-0.20210512105310-157f47d90d98/go.mod h1:kECd5Q6zwhrRKawfXOkkUTuVIGDQB4GTurGMvq5p7WE=
+github.com/micro/micro/v3 v3.2.2-0.20210512111111-9e3e99a26e10 h1:NlhJRCq+CVVgiKVlz8jkD3a/345ouyGakhs8SM42DY0=
+github.com/micro/micro/v3 v3.2.2-0.20210512111111-9e3e99a26e10/go.mod h1:sLZB2G2ksK7GnEKvcdsGYv4j8PHsV2XUI9zIOZxWX/M=
 github.com/miekg/dns v1.1.15/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.27 h1:aEH/kqUzUxGJ/UHcEKdJY+ugH6WEzsEBBSPa8zuy1aM=
 github.com/miekg/dns v1.1.27/go.mod h1:KNUDUusw/aVsxyTYZM1oqvCicbwhgbNgztCETuNZ7xM=
