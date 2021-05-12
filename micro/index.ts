@@ -222,6 +222,10 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
       value: "platform"
     },
     {
+      name: "MICRO_API_RESOLVER",
+      value: "subdomain"
+    },
+    {
       name: "MICRO_AUTH_PUBLIC_KEY",
       valueFrom: {
         secretKeyRef: {
@@ -229,10 +233,6 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
           key: "tls.crt"
         }
       }
-    },
-    {
-      name: "MICRO_API_RESOLVER",
-      value: "subdomain"
     },
     {
       name: "MICRO_AUTH_PRIVATE_KEY",
