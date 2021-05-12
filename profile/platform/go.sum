@@ -41,6 +41,7 @@ github.com/aliyun/aliyun-oss-go-sdk v0.0.0-20190307165228-86c17b95fcd5/go.mod h1
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 h1:EFSB7Zo9Eg91v7MJPVsifUysc/wPdN+NOnVe6bWbdBM=
 github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878/go.mod h1:3AMJUQhVx52RsWOnlkpikZr01T/yAVN2gn0861vByNg=
+github.com/aws/aws-sdk-go v1.23.0 h1:ilfJN/vJtFo1XDFxB2YMBYGeOvGZl6Qow17oyD4+Z9A=
 github.com/aws/aws-sdk-go v1.23.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f/go.mod h1:AuiFmCCPBSrqvVMvuqFuk0qogytodnVFVSN5CeJB8Gc=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
@@ -241,6 +242,7 @@ github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf h1:WfD7V
 github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf/go.mod h1:hyb9oH7vZsitZCiBt0ZvifOrB+qc8PS5IiilCIb87rg=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/jonboulle/clockwork v0.1.0 h1:VKV+ZcuP6l3yW9doeqz6ziZGgcynBVQO+obU0+0hcPo=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
@@ -320,6 +322,8 @@ github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511090807-70c2c1bfef0e h1:/2nUZm
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511090807-70c2c1bfef0e/go.mod h1:QrAIg2/g2rxgzgjQ6tgWXbHd1FoJohkHwN2XxlOqyt8=
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511120009-db2387f92776 h1:JowgI8bGOQSiVjSCptCICciHorvoyWvuJ2vSBp2xe5o=
 github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511120009-db2387f92776/go.mod h1:QrAIg2/g2rxgzgjQ6tgWXbHd1FoJohkHwN2XxlOqyt8=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511151324-19ced9676163 h1:OxfA14wcqi7nljlUyb8cd+fOwCZ4kw2bO43Y7VeNV/w=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210511151324-19ced9676163/go.mod h1:jZ47KVBOE+vGruQk8ys556hbtHT5690ZbiGUpwr89ZQ=
 github.com/micro/micro/v3 v3.0.4 h1:GupR5YoV0A7hn6C9taD49voZyTyVQT/ihqtGDg867c0=
 github.com/micro/micro/v3 v3.0.4/go.mod h1:dZa1KcK6Uh9ny7nhgHxOvoPiZR5cAnZefYT+EMmGwp4=
 github.com/micro/micro/v3 v3.1.2-0.20210304075604-7c315c030e4d h1:bl2OaiDJ05NQ2QqJwe864Jkf0CO1iNRwUansjfkh3bU=
@@ -345,6 +349,7 @@ github.com/miekg/dns v1.1.27 h1:aEH/kqUzUxGJ/UHcEKdJY+ugH6WEzsEBBSPa8zuy1aM=
 github.com/miekg/dns v1.1.27/go.mod h1:KNUDUusw/aVsxyTYZM1oqvCicbwhgbNgztCETuNZ7xM=
 github.com/minio/md5-simd v1.1.0 h1:QPfiOqlZH+Cj9teu0t9b1nTBfPbyTl16Of5MeuShdK4=
 github.com/minio/md5-simd v1.1.0/go.mod h1:XpBqgZULrMYD3R+M28PcmP0CkI7PEMzB3U77ZrKZ0Gw=
+github.com/minio/minio-go v6.0.14+incompatible/go.mod h1:7guKYtitv8dktvNUGrhzmNlA5wrAABTQXCoesZdFQO8=
 github.com/minio/minio-go/v7 v7.0.5 h1:I2NIJ2ojwJqD/YByemC1M59e1b4FW9kS7NlOar7HPV4=
 github.com/minio/minio-go/v7 v7.0.5/go.mod h1:TA0CQCjJZHM5SJj9IjqR0NmpmQJ6bCbXifAJ3mUU6Hw=
 github.com/minio/minio-go/v7 v7.0.10 h1:1oUKe4EOPUEhw2qnPQaPsJ0lmVTYLFu03SiItauXs94=
