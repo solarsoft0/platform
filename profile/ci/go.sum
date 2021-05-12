@@ -287,6 +287,8 @@ github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201214104124-6771b8a3a69c/go.mod 
 github.com/micro/micro/v3 v3.0.0-beta.6/go.mod h1:nirjvYSFibH15AsLQBsN6xiAPXIpl/uYG/3nvczdsJo=
 github.com/micro/micro/v3 v3.1.2-0.20210304075604-7c315c030e4d h1:bl2OaiDJ05NQ2QqJwe864Jkf0CO1iNRwUansjfkh3bU=
 github.com/micro/micro/v3 v3.1.2-0.20210304075604-7c315c030e4d/go.mod h1:+cr/21X4agxmBxMuztg/LOFrNBk9xLVJNq4UofWNWic=
+github.com/micro/micro/v3 v3.2.2-0.20210511151324-19ced9676163 h1:A2URe8wHvniwDKIeYaMCpH+FD4yAifqdkXBzaCIhj0Q=
+github.com/micro/micro/v3 v3.2.2-0.20210511151324-19ced9676163/go.mod h1:BQpuGyfMjBsp6843CpQz/u5lHWT1rgzsV6xW4pHf41o=
 github.com/miekg/dns v1.1.15/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.27 h1:aEH/kqUzUxGJ/UHcEKdJY+ugH6WEzsEBBSPa8zuy1aM=
 github.com/miekg/dns v1.1.27/go.mod h1:KNUDUusw/aVsxyTYZM1oqvCicbwhgbNgztCETuNZ7xM=
@@ -310,6 +312,8 @@ github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04/go.mod h1:5sN+Lt1CaY
 github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32/go.mod h1:9wM+0iRr9ahx58uYLpLIr5fm8diHn0JbqRycJi6w0Ms=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/nightlyone/lockfile v1.0.0 h1:RHep2cFKK4PonZJDdEl4GmkabuhbsRMgk/k3uAmxBiA=
+github.com/nightlyone/lockfile v1.0.0/go.mod h1:rywoIealpdNse2r832aiD9jRk8ErCatROs6LzC841CI=
 github.com/nrdcg/auroradns v1.0.0/go.mod h1:6JPXKzIRzZzMqtTDgueIhTi6rFf1QvYE/HzqidhOhjw=
 github.com/nrdcg/dnspod-go v0.4.0/go.mod h1:vZSoFSFeQVm2gWLMkyX61LZ8HI3BaqtHZWgPTGKr6KQ=
 github.com/nrdcg/goinwx v0.6.1/go.mod h1:XPiut7enlbEdntAqalBIqcYcTEVhpv/dKWgDCX2SwKQ=
