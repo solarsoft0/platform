@@ -9,7 +9,7 @@ require (
 	github.com/micro/micro/plugin/nats/stream/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210514104957-95ee0dd08833
-	github.com/micro/micro/v3 v3.2.2-0.20210512124126-77379af75217
+	github.com/micro/micro/v3 v3.2.2-0.20210514104957-95ee0dd08833
 	github.com/urfave/cli/v2 v2.3.0
 )
 
