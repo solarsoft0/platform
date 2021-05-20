@@ -7,10 +7,10 @@ require (
 	github.com/micro/micro/plugin/cockroach/v3 v3.0.0-20210510144512-ae06e7171156
 	github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff
-	github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210520154319-853ad92b19fd
-	github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210520154319-853ad92b19fd
-	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210520154319-853ad92b19fd
-	github.com/micro/micro/v3 v3.2.2-0.20210520102855-29bcd2c72a6a
+	github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210520155551-c0cfae02f812
+	github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210520155551-c0cfae02f812
+	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210520155551-c0cfae02f812
+	github.com/micro/micro/v3 v3.2.2-0.20210520154937-d69eb589fa2a
 	github.com/urfave/cli/v2 v2.3.0
 )
 
