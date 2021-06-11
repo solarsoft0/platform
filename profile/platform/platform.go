@@ -13,8 +13,6 @@ import (
 	"github.com/micro/micro/v3/service/broker"
 	microBuilder "github.com/micro/micro/v3/service/build"
 	"github.com/micro/micro/v3/service/build/golang"
-	"github.com/micro/micro/v3/service/config"
-	storeConfig "github.com/micro/micro/v3/service/config/store"
 	"github.com/micro/micro/v3/service/events"
 	evStore "github.com/micro/micro/v3/service/events/store"
 	"github.com/micro/micro/v3/service/logger"
@@ -23,6 +21,9 @@ import (
 	microRuntime "github.com/micro/micro/v3/service/runtime"
 	"github.com/micro/micro/v3/service/runtime/kubernetes"
 	"github.com/micro/micro/v3/service/store"
+	"github.com/micro/micro/v3/util/opentelemetry"
+	"github.com/micro/micro/v3/util/opentelemetry/jaeger"
+	"github.com/opentracing/opentracing-go"
 	"github.com/urfave/cli/v2"
 
 	// plugins
@@ -45,7 +46,6 @@ var Profile = &profile.Profile{
 		// when the store is created. The cockroach store address contains the location
 		// of certs so it can't be defaulted like the broker and registry.
 		store.DefaultStore = postgres.NewStore(store.Nodes(ctx.String("store_address")))
-		config.DefaultConfig, _ = storeConfig.NewConfig(store.DefaultStore, "")
 		profile.SetupBroker(redisBroker.NewBroker(broker.Addrs(ctx.String("broker_address"))))
 		profile.SetupRegistry(etcd.NewRegistry(registry.Addrs(ctx.String("registry_address"))))
 		profile.SetupJWT(ctx)
@@ -88,6 +88,25 @@ var Profile = &profile.Profile{
 				logger.Fatalf("Error configuring s3 blob store: %v", err)
 			}
 		}
+
+		reporterAddress := os.Getenv("MICRO_TRACING_REPORTER_ADDRESS")
+		if len(reporterAddress) == 0 {
+			reporterAddress = jaeger.DefaultReporterAddress
+		}
+		// Configure tracing with Jaeger:
+		tracingServiceName := ctx.Args().Get(1)
+		if len(tracingServiceName) == 0 {
+			tracingServiceName = "Micro"
+		}
+		openTracer, _, err := jaeger.New(
+			opentelemetry.WithServiceName(tracingServiceName),
+			opentelemetry.WithTraceReporterAddress(reporterAddress),
+		)
+		if err != nil {
+			logger.Fatalf("Error configuring opentracing: %v", err)
+		}
+		opentelemetry.DefaultOpenTracer = openTracer
+		opentracing.SetGlobalTracer(openTracer)
 
 		microRuntime.DefaultRuntime = kubernetes.NewRuntime(
 			kubernetes.RuntimeClassName("kata-fc"),
