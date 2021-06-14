@@ -11,7 +11,7 @@ require (
 	github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210607130502-d92d8f00160e
 	github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210607130502-d92d8f00160e
 	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210520160722-49fbecbd098d
-	github.com/micro/micro/v3 v3.2.2-0.20210607130502-d92d8f00160e
+	github.com/micro/micro/v3 v3.3.1-0.20210614125742-ea7a0855cbb2
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0
 )
