@@ -52,6 +52,9 @@ export const backupCron = new k8s.batch.v1beta1.CronJob("redis-backup", {
       },
       spec: {
         template:{
+          metadata: {
+            namespace: "server"
+          },
           spec: {
             restartPolicy: "Never",
             containers: [

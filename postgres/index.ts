@@ -57,6 +57,9 @@ export const backupCron = new k8s.batch.v1beta1.CronJob("postgres-backup", {
       },
       spec: {
         template:{
+          metadata: {
+            namespace: "server"
+          },
           spec: {
             restartPolicy: "Never",
             containers: [
@@ -82,8 +85,8 @@ export const backupCron = new k8s.batch.v1beta1.CronJob("postgres-backup", {
                     value: postgres.host
                   },
                   {
-                    name: "MICRO_POSTGRES_POST",
-                    value: String(postgres.port)
+                    name: "MICRO_POSTGRES_PORT",
+                    value: pulumi.interpolate`${postgres.port}`
                   },
                   {
                     name: "MICRO_POSTGRES_USER",
