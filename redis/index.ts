@@ -6,6 +6,7 @@ import {bucket, postgres} from "../postgres";
 
 
 const conf = new pulumi.Config("digitalocean");
+const gcpConf = new pulumi.Config("gcp");
 
 export const redis = new ocean.DatabaseCluster("api-redis-cluster",
     {
@@ -42,13 +43,17 @@ export const pr = new ocean.ProjectResources("pr-redis", {
   resources: [redis.clusterUrn]
 })
 
-export const backupCron = new k8s.batch.v2alpha1.CronJob("redisBackup", {
+export const backupCron = new k8s.batch.v1beta1.CronJob("redis-backup", {
   spec : {
     schedule: "0 */2 * * *",
     jobTemplate: {
+      metadata: {
+        namespace: "server"
+      },
       spec: {
         template:{
           spec: {
+            restartPolicy: "Never",
             containers: [
               {
                 name: "redis-backup",
@@ -61,11 +66,11 @@ export const backupCron = new k8s.batch.v2alpha1.CronJob("redisBackup", {
                   },
                   {
                     name: "MICRO_S3_ACCESS_KEY",
-                    value: conf.require("s3_access_key")
+                    value: gcpConf.require("s3_access_key")
                   },
                   {
                     name: "MICRO_S3_SECRET_KEY",
-                    value: conf.require("s3_secret_key")
+                    value: gcpConf.require("s3_secret_key")
                   },
                   {
                     name: "MICRO_REDIS_URI",
