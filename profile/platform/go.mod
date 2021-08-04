@@ -10,8 +10,8 @@ require (
 	github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff
 	github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210622092058-b12502169757
 	github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210622092058-b12502169757
-	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210520160722-49fbecbd098d
-	github.com/micro/micro/v3 v3.3.1-0.20210614125742-ea7a0855cbb2
+	github.com/micro/micro/plugin/s3/v3 v3.0.0-20210804135839-3b9d79ed593c
+	github.com/micro/micro/v3 v3.3.1-0.20210803122146-2a2fa437600d
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0
