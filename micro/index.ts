@@ -525,7 +525,7 @@ export const apiDeployment = new k8s.apps.v1.Deployment(
                 },
                 {
                   name: "MICRO_PROFILE",
-                  value: "client"
+                  value: "platform_client"
                 },
                 {
                   name: "MICRO_PROXY",
@@ -646,7 +646,7 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
                 },
                 {
                   name: "MICRO_PROFILE",
-                  value: "client"
+                  value: "platform_client"
                 },
                 {
                   name: "MICRO_PROXY",

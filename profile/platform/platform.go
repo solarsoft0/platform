@@ -35,6 +35,7 @@ import (
 
 func init() {
 	profile.Register("platform", Profile)
+	profile.Register("platform_client", ClientProfile)
 }
 
 // Profile is for running the micro platform
@@ -140,4 +141,20 @@ func redisStreamOpts(ctx *cli.Context) []redisstream.Option {
 	}
 
 	return opts
+}
+
+// ClientProfile is for clients running on the micro platform
+var ClientProfile = &profile.Profile{
+	Name: "platform_client",
+	Setup: func(ctx *cli.Context) error {
+		// Set up a default metrics reporter (being careful not to clash with any that have already been set):
+		if !metrics.IsSet() {
+			prometheusReporter, err := prometheus.New()
+			if err != nil {
+				return err
+			}
+			metrics.SetDefaultMetricsReporter(prometheusReporter)
+		}
+		return nil
+	},
 }
