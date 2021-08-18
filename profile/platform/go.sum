@@ -306,8 +306,8 @@ github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210526124831-f6d0c7a4730c h1:
 github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210526124831-f6d0c7a4730c/go.mod h1:xx/UW5gji91EHNCrtDU2yseWm3hjG0+xlhfriU1IsFk=
 github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff h1:PvLSWPb++sc1W2ooEWGmVHgqgDA8N8ObtLlbdSfSsjc=
 github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff/go.mod h1:WHp5Bi/PJKyFbo2WTO1RGGxK6UDQDoVi83/o4tGey1Q=
-github.com/micro/micro/plugin/redis/blocklist/v3 v3.0.0-20210817145020-42a9f7ef9e44 h1:att3EAMw0ebsK9c8Xd+ZTaemDz5I5MYko3fkXeLtFtc=
-github.com/micro/micro/plugin/redis/blocklist/v3 v3.0.0-20210817145020-42a9f7ef9e44/go.mod h1:idl9l3dy0zbdrmk9PpmOfmL3jAniYkUwChqa5YY99JA=
+github.com/micro/micro/plugin/redis/blocklist/v3 v3.0.0-20210818101332-9a333769a3d7 h1:N6kmUEQAzPa1+9j6YVNjYg6+zWwlgN/nYnrEvYJGwFw=
+github.com/micro/micro/plugin/redis/blocklist/v3 v3.0.0-20210818101332-9a333769a3d7/go.mod h1:idl9l3dy0zbdrmk9PpmOfmL3jAniYkUwChqa5YY99JA=
 github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210622092058-b12502169757 h1:mleDPROwXoPifCc+17SYAUuctXwv97DeRAobNJigASI=
 github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210622092058-b12502169757/go.mod h1:tz7HERX/HaNdgrfE0N+XyE92l+Kx9iBOfAh+T4outY4=
 github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210622092058-b12502169757 h1:tpTxzTzXVPw+CVyuwlP5ar2BHbDNcDYidMmCg5hl6Oc=
