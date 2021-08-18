@@ -2,12 +2,15 @@
 package platform
 
 import (
+	"crypto/tls"
 	"os"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/micro/micro/plugin/postgres/v3"
+	"github.com/micro/micro/plugin/redis/blocklist/v3"
 	"github.com/micro/micro/plugin/s3/v3"
 	"github.com/micro/micro/v3/profile"
+	auth2 "github.com/micro/micro/v3/service/api/auth"
 	"github.com/micro/micro/v3/service/auth"
 	"github.com/micro/micro/v3/service/auth/jwt"
 	"github.com/micro/micro/v3/service/broker"
@@ -155,6 +158,11 @@ var ClientProfile = &profile.Profile{
 			}
 			metrics.SetDefaultMetricsReporter(prometheusReporter)
 		}
+		auth2.DefaultBlockList = blocklist.New(
+			os.Getenv("MICRO_API_REDIS_ADDRESS"),
+			os.Getenv("MICRO_API_REDIS_USER"),
+			os.Getenv("MICRO_API_REDIS_PASSWORD"),
+			&tls.Config{})
 		return nil
 	},
 }

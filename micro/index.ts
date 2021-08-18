@@ -530,6 +530,18 @@ export const apiDeployment = new k8s.apps.v1.Deployment(
                 {
                   name: "MICRO_PROXY",
                   value: pulumi.interpolate`${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`
+                },
+                {
+                  name: "MICRO_API_REDIS_ADDRESS",
+                  value: redis.redis.uri
+                },
+                {
+                  name: "MICRO_API_REDIS_USER",
+                  value: redis.redis.user
+                },
+                {
+                  name: "MICRO_API_REDIS_PASSWORD",
+                  value: redis.redis.password
                 }
               ],
               args: ["service", "api"],
@@ -651,6 +663,18 @@ export const proxyDeployment = new k8s.apps.v1.Deployment(
                 {
                   name: "MICRO_PROXY",
                   value: pulumi.interpolate`${networkService.metadata.name}.${networkService.metadata.namespace}:${networkService.spec.ports[0].port}`
+                },
+                {
+                  name: "MICRO_API_REDIS_ADDRESS",
+                  value: redis.redis.uri
+                },
+                {
+                  name: "MICRO_API_REDIS_USER",
+                  value: redis.redis.user
+                },
+                {
+                  name: "MICRO_API_REDIS_PASSWORD",
+                  value: redis.redis.password
                 }
               ],
               args: ["service", "proxy"],
