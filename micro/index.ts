@@ -9,7 +9,7 @@ import { project, provider } from "../cluster";
 import { ObjectMeta } from "../crd/meta/v1";
 import { Output } from "@pulumi/pulumi";
 
-const image = "ghcr.io/m3o/platform:202106111627488fb1bf";
+const image = "ghcr.io/m3o/platform:20210818105033c721a5";
 const imagePullPolicy = "Always";
 const replicas = 2;
 
@@ -79,6 +79,16 @@ export const storeBucket = new ocean.SpacesBucket(
 
 export const runtimeBucket = new ocean.SpacesBucket(
   "micro-runtime-bucket",
+  {
+    region: "ams3"
+  },
+  {
+    parent: project
+  }
+);
+
+export const eventsBucket = new ocean.SpacesBucket(
+  "micro-events-bucket",
   {
     region: "ams3"
   },
@@ -298,6 +308,41 @@ function microDeployment(srv: string, port: number): k8s.apps.v1.Deployment {
       },
       {
         name: "MICRO_BLOB_STORE_SECRET_KEY",
+        valueFrom: {
+          secretKeyRef: {
+            name: spacesSecret.metadata.name,
+            key: "secretKey"
+          }
+        }
+      }
+    );
+  }
+
+  if (srv === "events") {
+    env.push(
+      {
+        name: "MICRO_EVENTS_STORE_REGION",
+        value: "ams3"
+      },
+      {
+        name: "MICRO_EVENTS_STORE_ENDPOINT",
+        value: "ams3.digitaloceanspaces.com"
+      },
+      {
+        name: "MICRO_EVENTS_STORE_BUCKET",
+        value: eventsBucket.name
+      },
+      {
+        name: "MICRO_EVENTS_STORE_ACCESS_KEY",
+        valueFrom: {
+          secretKeyRef: {
+            name: spacesSecret.metadata.name,
+            key: "accessId"
+          }
+        }
+      },
+      {
+        name: "MICRO_EVENTS_STORE_SECRET_KEY",
         valueFrom: {
           secretKeyRef: {
             name: spacesSecret.metadata.name,
@@ -981,7 +1026,7 @@ export const zipkin = new k8s.core.v1.Service(
 
 export const pr = new ocean.ProjectResources("pr-micro", {
   project: project.id,
-  resources: [storeBucket.bucketUrn, runtimeBucket.bucketUrn]
+  resources: [storeBucket.bucketUrn, runtimeBucket.bucketUrn, eventsBucket.bucketUrn]
 })
 
 
