@@ -302,8 +302,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0j
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff h1:LZjbkAu4CmwOI4plfntInujhFFMY03Dssl/bulU5rbo=
 github.com/micro/micro/plugin/etcd/v3 v3.0.0-20201217215412-2f7ad18595ff/go.mod h1:sUk0YCrz3qdEVx9euaPlAkdXcc+SQJHTNfSrjbh/Fmg=
-github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210526124831-f6d0c7a4730c h1:tqGnWO8nI+p4STJIgQeEEoHQwnIq4snQXZB6Y41czpE=
-github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210526124831-f6d0c7a4730c/go.mod h1:xx/UW5gji91EHNCrtDU2yseWm3hjG0+xlhfriU1IsFk=
+github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210825142032-d27318700a59 h1:l7TUeAMHeZNXHFZRjaUq2/B5BZvxhD6Ezeu7QCNpSmM=
+github.com/micro/micro/plugin/postgres/v3 v3.0.0-20210825142032-d27318700a59/go.mod h1:xx/UW5gji91EHNCrtDU2yseWm3hjG0+xlhfriU1IsFk=
 github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff h1:PvLSWPb++sc1W2ooEWGmVHgqgDA8N8ObtLlbdSfSsjc=
 github.com/micro/micro/plugin/prometheus/v3 v3.0.0-20201217215412-2f7ad18595ff/go.mod h1:WHp5Bi/PJKyFbo2WTO1RGGxK6UDQDoVi83/o4tGey1Q=
 github.com/micro/micro/plugin/redis/blocklist/v3 v3.0.0-20210818101332-9a333769a3d7 h1:N6kmUEQAzPa1+9j6YVNjYg6+zWwlgN/nYnrEvYJGwFw=
@@ -312,8 +312,8 @@ github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210622092058-b12502169757
 github.com/micro/micro/plugin/redis/broker/v3 v3.0.0-20210622092058-b12502169757/go.mod h1:tz7HERX/HaNdgrfE0N+XyE92l+Kx9iBOfAh+T4outY4=
 github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210622092058-b12502169757 h1:tpTxzTzXVPw+CVyuwlP5ar2BHbDNcDYidMmCg5hl6Oc=
 github.com/micro/micro/plugin/redis/stream/v3 v3.0.0-20210622092058-b12502169757/go.mod h1:jajB3N30fHCtExeafehUv76QCBmy4APeaua8tTMOm30=
-github.com/micro/micro/plugin/s3/v3 v3.0.0-20210824085733-d451d4c79ecd h1:jCbbS7wlQbeOfOqT3MAhgo1RSLjv4Ga3PijshLzI8ak=
-github.com/micro/micro/plugin/s3/v3 v3.0.0-20210824085733-d451d4c79ecd/go.mod h1:uVU5Mf/D7kucC8qhTayMwMnPX2POVCze7Tprx2rAaYw=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210825142032-d27318700a59 h1:i5ZrIGAlAQccP1vbpOh4yJolU2YS5MxnxrG2fnAbG8o=
+github.com/micro/micro/plugin/s3/v3 v3.0.0-20210825142032-d27318700a59/go.mod h1:uVU5Mf/D7kucC8qhTayMwMnPX2POVCze7Tprx2rAaYw=
 github.com/micro/micro/v3 v3.0.4/go.mod h1:dZa1KcK6Uh9ny7nhgHxOvoPiZR5cAnZefYT+EMmGwp4=
 github.com/micro/micro/v3 v3.2.2-0.20210526102354-5294ad2ae421 h1:h5jEJeXA9XabHx3KHOilXYpG0VYpXzAaQRvfcALYvwk=
 github.com/micro/micro/v3 v3.2.2-0.20210526102354-5294ad2ae421/go.mod h1:3ogxiE772ZvjjZlyzUHP++7+h5TtEu6Jdbbo6lDUw6Y=
