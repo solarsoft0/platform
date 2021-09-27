@@ -11,3 +11,4 @@ import "./prometheus";
 import "./monitoring";
 import "./grafana";
 import "./kata";
+import "./mongodb";
