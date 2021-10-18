@@ -17,4 +17,5 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0
+	google.golang.org/grpc v1.40.0 // indirect
 )
