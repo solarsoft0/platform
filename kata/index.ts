@@ -114,7 +114,7 @@ export const kataDaemonSet = new k8s.apps.v1.DaemonSet("kata", {
         containers: [
           {
             name: "kube-kata",
-            image: "katadocker/kata-deploy",
+            image: "quay.io/kata-containers/kata-deploy:stable",
             imagePullPolicy: "Always",
             lifecycle: {
               preStop: {

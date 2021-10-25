@@ -11,9 +11,9 @@ const gcpConf = new pulumi.Config("gcp");
 export const postgres = new ocean.DatabaseCluster("postgres-cluster",
     {
         engine: "pg",
-        nodeCount: 2,
+        nodeCount: conf.getNumber("postgres_count") || 2,
         region: conf.require("region") as ocean.Region,
-        size: "db-s-4vcpu-8gb" as ocean.DatabaseSlug,
+        size: conf.get("postgres_slug") as ocean.DatabaseSlug || "db-s-4vcpu-8gb" as ocean.DatabaseSlug,
         version: "13",
         privateNetworkUuid: vpc.id,
     },

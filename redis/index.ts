@@ -11,9 +11,9 @@ const gcpConf = new pulumi.Config("gcp");
 export const redis = new ocean.DatabaseCluster("api-redis-cluster",
     {
         engine: "redis",
-        nodeCount: 2,
+        nodeCount: conf.getNumber("redis_count") || 2 ,
         region: conf.require("region") as ocean.Region,
-        size: "m-2vcpu-16gb" as ocean.DatabaseSlug,
+        size: conf.get("redis_slug") as ocean.DatabaseSlug || "m-2vcpu-16gb" as ocean.DatabaseSlug,
         version: "6",
         privateNetworkUuid: vpc.id,
     },
@@ -92,3 +92,4 @@ export const backupCron = new k8s.batch.v1beta1.CronJob("redis-backup", {
     }
   }
 })
+

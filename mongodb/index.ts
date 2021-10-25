@@ -8,11 +8,12 @@ const conf = new pulumi.Config("digitalocean");
 export const mongo = new ocean.DatabaseCluster("api-mongo-cluster",
     {
         engine: "mongodb",
-        nodeCount: 1,
+        nodeCount: conf.getNumber("mongo_count") as any || 1,
         region: conf.require("region") as ocean.Region,
-        size: "db-s-2vcpu-4gb" as ocean.DatabaseSlug,
+        size: conf.get("mongo_slug") as ocean.DatabaseSlug || "db-s-2vcpu-4gb" as ocean.DatabaseSlug,
         version: "4",
         privateNetworkUuid: vpc.id,
+        tags: ["m3o"]
     },
     {
         parent: project,
